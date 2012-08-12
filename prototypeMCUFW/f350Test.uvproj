@@ -357,6 +357,16 @@
               <FileType>1</FileType>
               <FilePath>.\src\main.c</FilePath>
             </File>
+            <File>
+              <FileName>adc_drv.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\adc_drv.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c_drv.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\i2c_drv.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
