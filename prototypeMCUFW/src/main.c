@@ -83,8 +83,10 @@ void main()
 	// initialize I2C
 	I2C_Init();
 
+	// enable interrupts
 	EA = 1;
-	
+
+	// configure initial ADC settings	
 	_sTemperatureIndex = 0;
 	ADC_Configure(_sADCInputs[_sTemperatureIndex]);
 
