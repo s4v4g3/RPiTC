@@ -1,9 +1,9 @@
 /***************************************************************************//**
 
-   @file     Template.c
-   @date     mo/day/year
+   @file     main.c
+   @date     8/12/2012
 
-   @brief    Template file for new source modules
+   @brief    main program loop -- MCU firmware for temperature measurement
 
 *******************************************************************************/
 
@@ -22,9 +22,14 @@
 *******************************************************************************/
 #define NUM_TEMPERATURES  5
 
+// defines the coefficients for the Steinhart-hart equations to convert a 
+// thermistor resistance to a temperature
 SEGMENT_VARIABLE(_sSteinhart[3], float, SEG_CODE) = {2.3067434e-4,2.3696596e-4,1.2636414e-7};
+// the value of the resistor between the thermistor and the supply voltage
 SEGMENT_VARIABLE(_sResistorVal, float, SEG_CODE) = 9.71e3;
+// the max value of the ADC (TODO: move to ADC driver)
 SEGMENT_VARIABLE(_sADCMax, u32, SEG_CODE) = 0x00FFFFFF;
+// the inputs that will be used for each temperature measured
 SEGMENT_VARIABLE(_sADCInputs[NUM_TEMPERATURES], u8, SEG_CODE) = {kAIn0VsGnd, kAIn1VsGnd, kAIn0VsGnd, kAIn1VsGnd, kTempSensor};
 
 /*******************************************************************************
@@ -45,7 +50,10 @@ SEGMENT_VARIABLE(_sADCInputs[NUM_TEMPERATURES], u8, SEG_CODE) = {kAIn0VsGnd, kAI
 * LOCAL VARIABLES:
 *******************************************************************************/
 /* All following variables declared here must be declared 'static' */
+
+// the measured temperatures are stored here
 static SEGMENT_VARIABLE(_sTemperatures[NUM_TEMPERATURES], float, SEG_DATA);
+// this stores the index of the temperature to be measured next
 static SEGMENT_VARIABLE(_sTemperatureIndex, u8, SEG_DATA);
 
 /*******************************************************************************
@@ -55,10 +63,11 @@ static SEGMENT_VARIABLE(_sTemperatureIndex, u8, SEG_DATA);
 static void SYSCLK_Init();
 static void PORT_Init();
 
-// move these elsewhere ???
+// TODO: move these elsewhere ???
 static void UpdateTemperatures();
 static float ConvertADCValueToTemperature(u32 adcVal);
 
+// process incoming I2C messages
 static void I2C_Process();
 
 
@@ -125,6 +134,10 @@ static void PORT_Init()
    	P0 = 0xFF;
 }
 
+/**
+  Check if an ADC reading is available, and convert it to a temperature.
+  Then advance the _sTemperature index and configure the ADC for the next reading
+*/ 
 static void UpdateTemperatures()
 {
 	// check if the ADC reading is available

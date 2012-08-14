@@ -51,6 +51,10 @@
 *                       IMPLEMENTATION: Public functions
 *
 *******************************************************************************/
+
+/**
+ Initialize the ADC.  Performs a self-calibration as well.
+ */
 void ADC_Init()
 {
 	unsigned ADC0_decimation;
@@ -100,6 +104,9 @@ void ADC_Init()
    AD0INT = 0;                            // clear pending sample indication	
 }
 
+/**
+  Configure the ADC for the desired input selection and start a conversion
+*/
 void ADC_Configure(tADCInputSelection inputSel)
 {
 	// Set IDLE mode
@@ -112,6 +119,12 @@ void ADC_Configure(tADCInputSelection inputSel)
 	ADC0MD = 0x82;	
 }
 
+/**
+	Checks if the ADC reading is available, and if so returns it in
+	the memory pointed to by adcDataPtr and returns true.
+	If no reading is available, returns false
+
+*/
 tBoolean ADC_Read(tDataDWordPtr adcDataPtr)
 {
 	if (AD0INT)
