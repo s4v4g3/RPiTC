@@ -31,6 +31,7 @@ def test_main():
 class ServerApplication(object):
 
     def __init__(self, config_file, temp_provider_factory, output_controller_factory, pid_controller):
+        self.pid_state_model = PIDStateModel.convert_json_data_to_model({})
         self.config_file = config_file
         self.config_model = ConfigModel.load_from_file(self.config_file)
         self.config_model.save_to_file(self.config_file)
@@ -53,7 +54,7 @@ class ServerApplication(object):
         self.poller.register(self.socket, zmq.POLLIN)
 
     def run_pid(self):
-        self.pid.pid_iteration(self.pid_interval, self.config_model.pid_config, self.config_model.pid_state, self.oven_temp_provider, self.opt_temp_providers,
+        self.pid.pid_iteration(self.pid_interval, self.config_model.pid_config, self.pid_state_model, self.oven_temp_provider, self.opt_temp_providers,
                  self.output_controller)
 
     def poll_message(self):
@@ -113,7 +114,7 @@ class ServerApplication(object):
             if received_message is not None:
                 # send reply with state
                 logging.info("*** sending message back to client")
-                self.socket.send_json(self.config_model.pid_state.as_dict())
+                self.socket.send_json(self.pid_state_model.as_dict())
 
 
 def main_old():

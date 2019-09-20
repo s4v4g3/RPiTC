@@ -8,18 +8,6 @@
       "smooth_coeff": 0.05,
       "max_output": 100.0
    },
-   "pid_state": {
-      "last_oven_temp": 0.0,
-      "avg_oven_temp": 0.0,
-      "output": 100.0,
-      "error_sum": 1.125,
-      "opt_probe_temps": {
-         "Food Probe 1": 0.0
-      },
-      "i_term": 0,
-      "p_term": 1130.0,
-      "d_term": 0.0
-   },
    "logging": {
       "version": 1,
       "formatters": {

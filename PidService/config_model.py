@@ -9,7 +9,6 @@ __all__ = ["ConfigModel", "CONFIG_DEFAULTS"]
 
 CONFIG_DEFAULTS = {
   "pid_config": {},
-  "pid_state": {},
   "io_config": {
       "server_address": "tcp://*:12355",
       "oven_temp_provider": "MockTempProvider",
@@ -70,9 +69,6 @@ class ConfigModel(DotDict):
     pid_config = None # type: PIDConfigModel
     """PIDConfigModel: PID Config"""
 
-    pid_state = None  # type: PIDStateModel
-    """PIDStateModel: PID Config"""
-
     io_config = None #type: IOConfigModel
     """IOConfigModel: io configuration"""
 
@@ -95,8 +91,6 @@ class ConfigModel(DotDict):
         config_model.io_config = DotDict.convert_dict_to_dot_dict(io_config)
         pid_config = config_model.pid_config
         config_model.pid_config = PIDConfigModel.convert_json_data_to_model(pid_config)
-        pid_state = config_model.pid_state
-        config_model.pid_state = PIDStateModel.convert_json_data_to_model(pid_state)
         return config_model
 
 
