@@ -10,12 +10,17 @@ __all__ = ["ConfigModel", "CONFIG_DEFAULTS"]
 CONFIG_DEFAULTS = {
   "pid_config": {},
   "pid_state": {},
-  "oven_temp_provider": "RPiMAX6675TempProvider",
-  "output_controller": "RPiPWMOutputController",
-  "opt_temp_providers": [{
-       "label": "Food Probe 1",
-       "type": "MockTempProvider"
-     }],
+  "io_config": {
+      "server_address": "tcp://*:12355",
+      "oven_temp_provider": "MockTempProvider",
+      "output_controller": "MockOutputController",
+      "opt_temp_providers": [
+         {
+            "label": "Food Probe 1",
+            "type": "MockTempProvider"
+         }
+      ]
+   },
   "logging": {
         'version': 1,
         'formatters': {
@@ -47,6 +52,18 @@ CONFIG_DEFAULTS = {
     }
 }
 
+class IOConfigModel(DotDict):
+    server_address = None  #type: str
+    """str: server address"""
+
+    oven_temp_provider = None  # type: str
+    """str: oven temperature provider class"""
+
+    output_controller = None  # type: str
+    """str: output controller class"""
+
+    opt_temp_providers = None  # type: list[(str,str)]
+    """list[(str,str)]: optional temp providers (list of tuple with provider class and label)"""
 
 
 class ConfigModel(DotDict):
@@ -56,14 +73,8 @@ class ConfigModel(DotDict):
     pid_state = None  # type: PIDStateModel
     """PIDStateModel: PID Config"""
 
-    oven_temp_provider = None  #type: str
-    """str: oven temperature provider class"""
-
-    output_controller = None   #type: str
-    """str: output controller class"""
-
-    opt_temp_providers = None  #type: list[(str,str)]
-    """list[(str,str)]: optional temp providers (list of tuple with provider class and label)"""
+    io_config = None #type: IOConfigModel
+    """IOConfigModel: io configuration"""
 
     @classmethod
     def load_from_file(cls, json_fn):
@@ -80,6 +91,8 @@ class ConfigModel(DotDict):
         else:
             config_model = cls.convert_json_data_to_model({})
             config_model.save_to_file(json_fn)
+        io_config = config_model.io_config
+        config_model.io_config = DotDict.convert_dict_to_dot_dict(io_config)
         pid_config = config_model.pid_config
         config_model.pid_config = PIDConfigModel.convert_json_data_to_model(pid_config)
         pid_state = config_model.pid_state

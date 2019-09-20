@@ -35,12 +35,12 @@ class ServerApplication(object):
         self.config_model = ConfigModel.load_from_file(self.config_file)
         self.config_model.save_to_file(self.config_file)
         logging.config.dictConfig(self.config_model.logging)
-        self.oven_temp_provider = temp_provider_factory.CreateTempProvider(self.config_model.oven_temp_provider, 'Oven')
+        self.oven_temp_provider = temp_provider_factory.CreateTempProvider(self.config_model.io_config.oven_temp_provider, 'Oven')
         self.opt_temp_providers =[]
-        for opt_temp_provider_entry in self.config_model.opt_temp_providers:
+        for opt_temp_provider_entry in self.config_model.io_config.opt_temp_providers:
             self.opt_temp_providers.append(temp_provider_factory.CreateTempProvider(opt_temp_provider_entry['type'],
                                            opt_temp_provider_entry['label']))
-        self.output_controller = output_controller_factory.CreateOutputController(self.config_model.output_controller)
+        self.output_controller = output_controller_factory.CreateOutputController(self.config_model.io_config.output_controller)
 
         self.pid = pid_controller
         self.pid_interval = 1.0
@@ -48,7 +48,7 @@ class ServerApplication(object):
         # create zmq server
         ctx = zmq.Context.instance()
         self.socket = ctx.socket(zmq.REP)
-        self.socket.bind("tcp://127.0.0.1:12355")
+        self.socket.bind(self.config_model.io_config.server_address)
         self.poller = zmq.Poller()
         self.poller.register(self.socket, zmq.POLLIN)
 
