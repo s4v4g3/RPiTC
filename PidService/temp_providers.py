@@ -44,8 +44,8 @@ class RPiMAX6675TempProvider(TempProviderBase):
     def read_temp(self):
         for i in range(0, 5):
 
-            c, d = self.pi.spi_read(self.sensor, SPI_BYTES_TO_READ)
-            if c == 2:
+            count, d = self.pi.spi_read(self.sensor, SPI_BYTES_TO_READ)
+            if count == SPI_BYTES_TO_READ:
                 word = (d[0] << 8) | d[1]
                 if (word & 0x8006) == 0:  # Bits 15, 2, and 1 should be zero.
                     t = (word >> 3) / 4.0
