@@ -6,88 +6,11 @@ from output_controllers import OutputControllerBase
 
 __all__ = ["PidController"]
 
-"""
-class DotDict(dict):
-
-    def set_values(self, dict):
-        for key in dict:
-            self[key] = dict[key]
-
-    def get_values(self):
-        return self.__dict__
-
-    def __getattribute__(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            return dict.__getattribute__(self, name)
-
-    def __setattr__(self, key, value):
-        self[key] = value
-        return value
-
-    @property
-    def __dict__(self):
-        return {key: self[key] for key in self}
-
-class PidState(DotDict):
-    last_temp = 0
-    avg_temp = 0
-    output = 0
-    error_sum = 0
-    max_output = 100
-
-    def __init__(self):
-        pass
-
-class PidConfig(DotDict):
-
-    def __init__(self, config):
-        pass
-"""
 
 class PidController(object):
 
     def __init__(self):
-
-        """
-        # input/output/config
-        self.oven_probe = temperature_provider
-        self.output_controller = output_controller
-        self.config_provider = config_provider
-
-        # process variables
-        self.process_variables = {}
-        self.process_variables['set_point'] =
-
-        # state variables
-        self.__load_config()
-        self.last_temp = 0
-        self.avg_temp = 0
-        self.output = 0
-        self.error_sum = 0
-        self.max_output = 100
-        """
-        """
-        def __load_config(self):
-            self.set_point = self.config_provider.get_value('set_point', 225)
-            self.kb = self.config_provider.get_value('kb', 0)
-            self.kp = self.config_provider.get_value('kp', 5)
-            self.ki = self.config_provider.get_value('ki', 0.005)
-            self.kd = self.config_provider.get_value('kd', 1)
-            self.smooth_coeff = self.config_provider.get_value('smooth_coeff', (1.0 / 20.0))
-            self.__save_config()
-    
-        def __save_config(self):
-            self.config_provider.set_value('set_point', self.set_point)
-            self.config_provider.set_value('kb', self.kb)
-            self.config_provider.set_value('kp', self.kp)
-            self.config_provider.set_value('ki', self.ki)
-            self.config_provider.set_value('kd', self.kd)
-            self.config_provider.set_value('smooth_coeff', self.smooth_coeff)
-        """
-
-
+        pass
 
     @classmethod
     def __calc_avg_temp(cls, pid_config, pid_state):
