@@ -8,7 +8,7 @@ import time
 import json
 import zmq
 from stopwatch import Stopwatch
-from data_logger import LoggerMgr
+from data_logger import LoggerMgr, ConsoleColor
 
 
 def test_main():
@@ -81,11 +81,11 @@ class ServerApplication(object):
             # apply pid_config_msg to new_pid_config
             try:
                 if new_pid_config.apply(pid_config_msg):
-                    LoggerMgr.info("*** applying new configuration!")
+                    LoggerMgr.info("*** applying new configuration!", color=ConsoleColor.OKBLUE)
                     self.config_model.pid_config = new_pid_config
                     self.config_model.save_to_file(self.config_file)
                 else:
-                    LoggerMgr.info("*** nothing to apply!")
+                    LoggerMgr.info("*** nothing to apply!", color=ConsoleColor.OKBLUE)
             except ValueError as e:
                 LoggerMgr.warning("******** ValueError: {}".format(str(e)))
                 pass
@@ -97,8 +97,8 @@ class ServerApplication(object):
             stopwatch = Stopwatch()
             received_message = self.poll_message()
             if received_message:
-                LoggerMgr.info("*** received message from client")
-                LoggerMgr.info("*** message = {}".format(received_message))
+                LoggerMgr.info("*** received message from client", color=ConsoleColor.OKBLUE)
+                LoggerMgr.info("*** message = {}".format(received_message), color=ConsoleColor.OKBLUE)
                 self.apply_pid_config(received_message)
                 if 'pid_config' in received_message:
                     self.apply_pid_config(received_message['pid_config'])
@@ -112,7 +112,7 @@ class ServerApplication(object):
 
             if received_message is not None:
                 # send reply with state
-                LoggerMgr.info("*** sending message back to client")
+                LoggerMgr.info("*** sending message back to client", color=ConsoleColor.OKBLUE)
                 self.socket.send_json(self.pid_state_model.as_dict())
 
 
