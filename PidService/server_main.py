@@ -97,6 +97,7 @@ class ServerApplication(object):
     def main_loop(self):
         LoggerMgr.info("Starting ServerApplication.main_loop()")
         self.run_pid()
+        iteration = 0
         while(True):
             stopwatch = Stopwatch()
             received_message = self.poll_message()
@@ -112,9 +113,13 @@ class ServerApplication(object):
             if elapsed < self.pid_interval:
                 time.sleep(self.pid_interval - elapsed)
 
+
             self.run_pid()
 
-            self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
+            db_insert_interval = 15
+            if iteration % db_insert_interval == 0:
+                self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
+            iteration += 1
 
             if received_message is not None:
                 # send reply with state
