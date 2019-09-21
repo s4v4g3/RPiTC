@@ -3,6 +3,7 @@ from data_logger import LoggerMgr, ConsoleColor
 import datetime
 import hashlib
 import json
+from dateutil import tz
 
 __all__ = ["DbManager"]
 
@@ -48,6 +49,11 @@ class AlchemyEngine(object):
             result = self.connection.execute(query)
 
         now = datetime.datetime.now()
+        from_zone = tz.tzutc()
+        to_zone = tz.tzlocal()
+        utc = now.replace(tzinfo=from_zone)
+        local_time = utc.astimezone(to_zone)
+
         query = db.insert(self.pid_state_table).values(
             time=now,
             oven_temp=pid_state.last_oven_temp,
@@ -58,7 +64,8 @@ class AlchemyEngine(object):
             i_term=pid_state.i_term,
             error_sum=pid_state.error_sum,
             set_point=pid_config.set_point,
-            pid_config=config_hash)
+            pid_config=config_hash,
+            local_time=local_time.timestamp())
         result = self.connection.execute(query)
 
 
