@@ -3,7 +3,7 @@ from pid_config_model import PIDConfigModel
 from pid_state_model import PIDStateModel
 from temp_providers import TempProviderBase
 from output_controllers import OutputControllerBase
-from data_logger import LoggerMgr
+from data_logger import LoggerMgr, ConsoleColor
 
 __all__ = ["PidController"]
 
@@ -36,13 +36,14 @@ class PidController(object):
         Returns:
 
         """
-        LoggerMgr.info("pid_iteration {")
+        LoggerMgr.info("pid_iteration {", color=ConsoleColor.BOLD)
         LoggerMgr.info("set_point: {}".format(pid_config.set_point))
         pid_state.last_oven_temp = oven_temp_provider.read_temp()
         LoggerMgr.info("oven temp: {}".format(pid_state.last_oven_temp))
         opt_temps = {}
         for opt_temp_provider in opt_temp_providers:
             opt_temps[opt_temp_provider.label] = opt_temp_provider.read_temp()
+            LoggerMgr.info("{} temp: {}".format(opt_temp_provider.label, opt_temps[opt_temp_provider.label]))
         pid_state.opt_probe_temps = opt_temps
 
         self.__calc_avg_temp(pid_config, pid_state)
@@ -83,7 +84,7 @@ class PidController(object):
 
         output_controller.set_output(pid_state.output)
         LoggerMgr.info("output: {}".format(pid_state.output))
-        LoggerMgr.info("} pid_iteration")
+        LoggerMgr.info("} pid_iteration", color=ConsoleColor.BOLD)
 
 
 
