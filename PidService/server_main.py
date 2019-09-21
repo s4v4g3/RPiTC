@@ -9,6 +9,7 @@ import json
 import zmq
 from stopwatch import Stopwatch
 from data_logger import LoggerMgr, ConsoleColor
+from db_manager import DbManager
 
 
 def test_main():
@@ -51,6 +52,9 @@ class ServerApplication(object):
         self.socket.bind(self.config_model.io_config.server_address)
         self.poller = zmq.Poller()
         self.poller.register(self.socket, zmq.POLLIN)
+
+        # db connector
+        self.db_engine = DbManager.create_db_engine()
 
     def run_pid(self):
         self.pid.pid_iteration(self.pid_interval, self.config_model.pid_config, self.pid_state_model, self.oven_temp_provider, self.opt_temp_providers,
@@ -109,6 +113,8 @@ class ServerApplication(object):
                 time.sleep(self.pid_interval - elapsed)
 
             self.run_pid()
+
+            self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
 
             if received_message is not None:
                 # send reply with state
