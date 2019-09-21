@@ -8,8 +8,7 @@ import time
 import json
 import zmq
 from stopwatch import Stopwatch
-import logging
-import logging.config
+from data_logger import LoggerMgr
 
 
 def test_main():
@@ -35,7 +34,7 @@ class ServerApplication(object):
         self.config_file = config_file
         self.config_model = ConfigModel.load_from_file(self.config_file)
         self.config_model.save_to_file(self.config_file)
-        logging.config.dictConfig(self.config_model.logging)
+        LoggerMgr.configure(self.config_model.logging)
         self.oven_temp_provider = temp_provider_factory.CreateTempProvider(self.config_model.io_config.oven_temp_provider, 'Oven')
         self.opt_temp_providers =[]
         for opt_temp_provider_entry in self.config_model.io_config.opt_temp_providers:
@@ -67,11 +66,11 @@ class ServerApplication(object):
         if 'logging' in config_msg:
             log_config = config_msg['logging']
             try:
-                logging.config.dictConfig(self.config_model.logging)
+                LoggerMgr.configure(self.config_model.logging)
                 self.config_model.logging = log_config
                 self.config_model.save_to_file(self.config_file)
             except Exception as e:
-                logging.warning(str(e))
+                LoggerMgr.warning(str(e))
 
 
     def apply_pid_config(self, config_msg):
@@ -82,24 +81,24 @@ class ServerApplication(object):
             # apply pid_config_msg to new_pid_config
             try:
                 if new_pid_config.apply(pid_config_msg):
-                    logging.info("*** applying new configuration!")
+                    LoggerMgr.info("*** applying new configuration!")
                     self.config_model.pid_config = new_pid_config
                     self.config_model.save_to_file(self.config_file)
                 else:
-                    logging.info("*** nothing to apply!")
+                    LoggerMgr.info("*** nothing to apply!")
             except ValueError as e:
-                logging.warning("******** ValueError: {}".format(str(e)))
+                LoggerMgr.warning("******** ValueError: {}".format(str(e)))
                 pass
 
     def main_loop(self):
-        logging.info("Starting ServerApplication.main_loop()")
+        LoggerMgr.info("Starting ServerApplication.main_loop()")
         self.run_pid()
         while(True):
             stopwatch = Stopwatch()
             received_message = self.poll_message()
             if received_message:
-                logging.info("*** received message from client")
-                logging.info("*** message = {}".format(received_message))
+                LoggerMgr.info("*** received message from client")
+                LoggerMgr.info("*** message = {}".format(received_message))
                 self.apply_pid_config(received_message)
                 if 'pid_config' in received_message:
                     self.apply_pid_config(received_message['pid_config'])
@@ -113,69 +112,8 @@ class ServerApplication(object):
 
             if received_message is not None:
                 # send reply with state
-                logging.info("*** sending message back to client")
+                LoggerMgr.info("*** sending message back to client")
                 self.socket.send_json(self.pid_state_model.as_dict())
-
-
-def main_old():
-    config_data_file = "config.json"
-    config_model = ConfigModel.load_from_file(config_data_file)
-    config_model.save_to_file(config_data_file)
-
-    temp_provider_factory = get_temp_provider_factory()
-    oven_temp_provider = temp_provider_factory.CreateTempProvider(config_model.oven_temp_provider, 'Oven')
-    opt_temp_providers = []
-    for opt_temp_provider_entry in config_model.opt_temp_providers:
-        opt_temp_providers.append(temp_provider_factory.CreateTempProvider(opt_temp_provider_entry['type'], opt_temp_provider_entry['label']))
-
-    output_controller_factory = get_output_controller_factory()
-    output_controller = output_controller_factory.CreateOutputController(config_model.output_controller)
-
-    pid = PidController()
-
-    # create zmq server
-    ctx = zmq.Context.instance()
-    socket = ctx.socket(zmq.REP)
-    socket.bind("tcp://127.0.0.1:12355")
-    poller = zmq.Poller()
-    poller.register(socket, zmq.POLLIN)
-
-    pid_interval = 1.0
-    pid.pid_loop(pid_interval, config_model.pid_config, config_model.pid_state, oven_temp_provider, opt_temp_providers,
-                 output_controller)
-    while True:
-        stopwatch = Stopwatch()
-        socks = dict(poller.poll(1 * 1000))
-
-        received_message = None
-        if socket in socks:
-            new_pid_config = config_model.pid_config.copy()
-            received_message = socket.recv_json()
-            print("*** received message from client")
-            print("*** message = {}".format(received_message))
-            # apply msg_json to new_pid_config
-            try:
-                if new_pid_config.apply(received_message):
-                    print("*** applying new configuration!")
-                    config_model.pid_config = new_pid_config
-                    config_model.save_to_file(config_data_file)
-                else:
-                    print("*** nothing to apply!")
-            except ValueError:
-                print("******** ValueError!")
-                pass
-
-        elapsed = stopwatch.elapsed()
-        if elapsed < pid_interval:
-            time.sleep(pid_interval - elapsed)
-
-        pid.pid_loop(pid_interval, config_model.pid_config, config_model.pid_state, oven_temp_provider,
-                     opt_temp_providers, output_controller)
-
-        if received_message is not None:
-            # send reply with state
-            print("*** sending message back to client")
-            socket.send_json(config_model.pid_state.as_dict())
 
 
 if __name__ == "__main__":

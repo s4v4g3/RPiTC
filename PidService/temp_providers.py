@@ -1,4 +1,5 @@
 import math
+from data_logger import LoggerMgr
 
 __all__ = ["get_temp_provider_factory", "MockTempProvider"]
 
@@ -17,7 +18,6 @@ class MockTempProvider(TempProviderBase):
         super().__init__(label)
 
     def read_temp(self):
-        print('{} temp = {}'.format(self.label, self.temp))
         return self.temp
 
 #constants

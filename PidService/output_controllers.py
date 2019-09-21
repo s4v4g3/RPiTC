@@ -13,12 +13,10 @@ class MockOutputController(OutputControllerBase):
 
     def set_output(self, output):
         self.output = output
-        print("output = {}".format(output))
 
 class RPiPWMOutputController(OutputControllerBase):
 
     def set_output(self, output):
-        print("output = {}".format(output))
         pass
 
 

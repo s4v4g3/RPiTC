@@ -3,6 +3,7 @@ from pid_config_model import PIDConfigModel
 from pid_state_model import PIDStateModel
 from temp_providers import TempProviderBase
 from output_controllers import OutputControllerBase
+from data_logger import LoggerMgr
 
 __all__ = ["PidController"]
 
@@ -35,17 +36,21 @@ class PidController(object):
         Returns:
 
         """
-
+        LoggerMgr.info("pid_iteration {")
+        LoggerMgr.info("set_point: {}".format(pid_config.set_point))
         pid_state.last_oven_temp = oven_temp_provider.read_temp()
+        LoggerMgr.info("oven temp: {}".format(pid_state.last_oven_temp))
         opt_temps = {}
         for opt_temp_provider in opt_temp_providers:
             opt_temps[opt_temp_provider.label] = opt_temp_provider.read_temp()
         pid_state.opt_probe_temps = opt_temps
 
         self.__calc_avg_temp(pid_config, pid_state)
+        LoggerMgr.info("avg oven temp: {}".format(pid_state.avg_oven_temp))
 
         last_output = pid_state.output
         error = pid_config.set_point - pid_state.last_oven_temp
+        LoggerMgr.info("error: {}".format(error))
 
         if True:
             pid_state.i_term = 0
@@ -61,6 +66,10 @@ class PidController(object):
         pid_state.p_term = pid_config.kp * error
         pid_state.d_term = pid_config.kd * (pid_state.avg_oven_temp - pid_state.last_oven_temp)
 
+        LoggerMgr.info("kb: {}".format(pid_config.kb))
+        LoggerMgr.info("p_term: {}".format(pid_state.p_term))
+        LoggerMgr.info("d_term: {}".format(pid_state.d_term))
+        LoggerMgr.info("error_sum: {}".format(pid_state.error_sum))
         output = pid_config.kb
         output += pid_state.p_term
         output += pid_state.d_term
@@ -73,8 +82,8 @@ class PidController(object):
             pid_state.output = 0
 
         output_controller.set_output(pid_state.output)
-
-
+        LoggerMgr.info("output: {}".format(pid_state.output))
+        LoggerMgr.info("} pid_iteration")
 
 
 
