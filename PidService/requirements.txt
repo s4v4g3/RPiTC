@@ -1,0 +1,6 @@
+libpigpiod-dev
+sqlalchemy
+mysql
+mysqlconnector
+mysqlclient
+zmq
