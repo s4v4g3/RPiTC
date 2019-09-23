@@ -2,6 +2,53 @@
 var chart;
 var duration = 3600; // default = 1 hr of data
 
+function changeSetPoint(value) {
+    post_data = {
+        pid_config: {
+            set_point: value
+        }
+    }
+    $.ajax({
+        type: "POST",
+        url: "/settings",
+        data: JSON.stringify(post_data),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function(data){console.log(JSON.stringify(data))},
+        failure: function(errMsg) {
+            alert(errMsg);
+        }
+    });
+}
+
+function updateSetPoint(value){
+    $('#setPointSlider').val(value).change();
+}
+/*
+function initSettingsHandlers() {
+    var usp = document.getElementById("UpdateSetPoint")
+    usp.onclick = () => {
+        post_data = {
+            pid_config: {
+                set_point: 257
+            }
+        }
+        $.ajax({
+            type: "POST",
+            url: "/settings",
+            data: JSON.stringify(post_data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function(data){console.log(JSON.stringify(data))},
+            failure: function(errMsg) {
+                alert(errMsg);
+            }
+        });
+
+    }
+}
+*/
+
 function reorgData(data) {
     return {
         pit_temp: data.map(a => [a.local_time*1000, a.oven_temp]),
@@ -16,6 +63,8 @@ function updateData() {
 
 // update plot with new data
 function updatePlot(data) {
+    
+    updateSetPoint(data[data.length-1].set_point)
     // reorg data
     let reorg_data = reorgData(data)
 
@@ -46,8 +95,11 @@ function buttonCallback(btnData) {
 }
 
 function createPlot(data) {
+    updateSetPoint(data[data.length-1].set_point)
+    
     // reorg data
     let reorg_data = reorgData(data)
+    
     // Create the chart
     chart = Highcharts.stockChart('container', {
 
@@ -209,8 +261,48 @@ function createPlot(data) {
 
 $(() => {
 
-
+    // initSettingsHandlers();
     requestData(createPlot);
     setInterval(updateData, 15000);
+
+    // For ie8 support
+    var $document = $(document);
+    var textContent = ('textContent' in document) ? 'textContent' : 'innerText';
+
+    function valueOutput(element) {
+        var value = element.value;
+        var output = element.parentNode.getElementsByTagName('output')[0] || element.parentNode.parentNode.getElementsByTagName('output')[0];
+        output[textContent] = value;
+    }
+
+    var selector = '#setPointSlider'
+    $document.on('input', selector, function(e) {
+        valueOutput(e.target);
+    });      
+
+    // rangeslider initialization
+    $(selector).rangeslider({
+
+        // Deactivate the feature detection
+        polyfill: false,
+
+        // Callback function
+        onInit: function() {
+            valueOutput(this.$element[0]);
+        },
+
+        // Callback function
+        onSlide: function(position, value) {
+            console.log('onSlide');
+            console.log('position: ' + position, 'value: ' + value);
+        },
+
+        // Callback function
+        onSlideEnd: function(position, value) {
+            console.log('onSlideEnd');
+            console.log('position: ' + position, 'value: ' + value);
+            changeSetPoint(value);
+        }
+    });
 
 });

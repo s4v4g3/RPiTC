@@ -2,13 +2,20 @@ extends layout
 
 block content
   
-  script(src="https://code.highcharts.com/stock/highstock.js")
-  script(src="https://code.highcharts.com/stock/modules/data.js")
-  script(src="https://code.highcharts.com/stock/modules/exporting.js")
-  script(src="https://code.highcharts.com/stock/modules/export-data.js")
-   
-  script(src="https://code.jquery.com/jquery-3.2.1.js")
+  script(src="//code.highcharts.com/stock/highstock.js")
+  script(src="//code.highcharts.com/stock/modules/data.js")
+  script(src="//code.highcharts.com/stock/modules/exporting.js")
+  script(src="//code.highcharts.com/stock/modules/export-data.js")
+  script(src="//code.jquery.com/jquery-3.2.1.js")
+  script(src="//cdnjs.cloudflare.com/ajax/libs/rangeslider.js/2.3.2/rangeslider.js")
   script(src="/javascripts/chart.js")
   
   #container
+
+  div
+    input#setPointSlider(type='range', min=0, max=300, step=5, value=225 data-rangeslider)
+    output
+  
+
+  
   
