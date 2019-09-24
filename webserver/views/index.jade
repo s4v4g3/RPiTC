@@ -12,9 +12,39 @@ block content
   
   #container
 
-  div
+  .centered
+    h2 Set Point
     input#setPointSlider(type='range', min=0, max=300, step=5, value=225 data-rangeslider)
     output
+  .centered
+    h2 PID Parameters
+      table.blueTable#pid_table
+        thead
+          tr
+            th Output
+            th kp
+            th kd
+            th ki
+            th avg temp
+            th last temp
+            th p term
+            th d term
+            th i term
+        tbody
+          tr#pid_data
+            td 0
+            td 0
+            td 0
+            td 0
+            td 0
+            td 0
+            td 0
+            td 0
+            td 0
+  
+
+
+
   
 
   

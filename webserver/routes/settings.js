@@ -15,6 +15,7 @@ var pool = mysql.createPool({
 
 
 /* GET settings page. */
+/*
 router.get('/', function(req, res, next) {
     let secs = 3600
     if (req.query.sec) {
@@ -47,15 +48,17 @@ router.get('/', function(req, res, next) {
         }       
     });
 });
+*/
 
 router.post('/', function(req, res) {
     let body = req.body;
     var zmqsock = zmq.socket('req');
     zmqsock.connect(`tcp://${hostname}:12355`)
     zmqsock.on("message", function(reply) {
-        console.log(`zmq response: ${reply}`)
+        data = JSON.parse(reply)
+        console.log(`zmq response: ${data}`)
         zmqsock.close();
-        res.status(200).json({reply: reply})
+        res.status(200).json({reply: data})
     });
     zmq_message = JSON.stringify(body)
     console.log(`zmq request: ${zmq_message}`)

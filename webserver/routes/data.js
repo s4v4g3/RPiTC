@@ -28,7 +28,7 @@ router.get('/', function(req, res, next) {
             let tzOffset = (new Date()).getTimezoneOffset() * 60
             let localTime = (date - tzOffset)
             let startDate = (localTime) - secs
-            let select = `SELECT local_time, oven_temp, output, set_point from pid_view where local_time > ${startDate} ORDER BY time asc`
+            let select = `SELECT * from pid_view where local_time > ${startDate} ORDER BY time asc`
             console.log(select)
             connection.query(select, function (err, result, fields){
                 if (err) {

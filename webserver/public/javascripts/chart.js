@@ -1,6 +1,7 @@
 
 var chart;
 var duration = 3600; // default = 1 hr of data
+var skipSetPointUpdate = false;
 
 function changeSetPoint(value) {
     post_data = {
@@ -14,7 +15,10 @@ function changeSetPoint(value) {
         data: JSON.stringify(post_data),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function(data){console.log(JSON.stringify(data))},
+        success: function(data){
+            skipSetPointUpdate = true
+            console.log(JSON.stringify(data))
+        },
         failure: function(errMsg) {
             alert(errMsg);
         }
@@ -22,32 +26,12 @@ function changeSetPoint(value) {
 }
 
 function updateSetPoint(value){
-    $('#setPointSlider').val(value).change();
-}
-/*
-function initSettingsHandlers() {
-    var usp = document.getElementById("UpdateSetPoint")
-    usp.onclick = () => {
-        post_data = {
-            pid_config: {
-                set_point: 257
-            }
-        }
-        $.ajax({
-            type: "POST",
-            url: "/settings",
-            data: JSON.stringify(post_data),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(data){console.log(JSON.stringify(data))},
-            failure: function(errMsg) {
-                alert(errMsg);
-            }
-        });
-
+    if (!skipSetPointUpdate) {
+        $('#setPointSlider').val(value).change();
     }
+    skipSetPointUpdate = false
 }
-*/
+
 
 function reorgData(data) {
     return {
@@ -63,7 +47,7 @@ function updateData() {
 
 // update plot with new data
 function updatePlot(data) {
-    
+    updatePidTable(data[data.length-1])
     updateSetPoint(data[data.length-1].set_point)
     // reorg data
     let reorg_data = reorgData(data)
@@ -94,7 +78,27 @@ function buttonCallback(btnData) {
     updateData();
 }
 
+function updatePidTable(data) {
+    function appendData(row, value) {
+        row += `<td>${value}</td>`
+        return row
+    }
+    let row = "<tr>"
+    row = appendData(row, data.output)
+    row = appendData(row, data.kp)
+    row = appendData(row, data.kd)
+    row = appendData(row, data.ki)
+    row = appendData(row, data.avg_oven_temp)
+    row = appendData(row, data.oven_temp)
+    row = appendData(row, data.p_term)
+    row = appendData(row, data.d_term)
+    row = appendData(row, data.error_sum)
+    row += "</tr>"
+    $('#pid_data').replaceWith(row);
+}
+
 function createPlot(data) {
+    updatePidTable(data[data.length-1])
     updateSetPoint(data[data.length-1].set_point)
     
     // reorg data
@@ -304,5 +308,7 @@ $(() => {
             changeSetPoint(value);
         }
     });
+
+    
 
 });
