@@ -3,12 +3,7 @@ var chart;
 var duration = 3600; // default = 1 hr of data
 var skipSetPointUpdate = false;
 
-function changeSetPoint(value) {
-    post_data = {
-        pid_config: {
-            set_point: value
-        }
-    }
+function doSettingsPost(post_data, success_cb, failure_cb) {
     $.ajax({
         type: "POST",
         url: "/settings",
@@ -16,13 +11,43 @@ function changeSetPoint(value) {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(data){
+            success_cb(data)
+        },
+        failure: function(errMsg) {
+            failure_cb(errMsg)
+        }
+    });
+}
+
+function changeSetPoint(value) {
+    post_data = {
+        pid_config: {
+            set_point: value
+        }
+    }
+    doSettingsPost(post_data, 
+        function(data) {
             skipSetPointUpdate = true
             console.log(JSON.stringify(data))
         },
-        failure: function(errMsg) {
+        function(errMsg) {
             alert(errMsg);
+        })
+}
+
+function clearWindup() {
+    post_data = {
+        pid_state: {
+            error_sum: 0
         }
-    });
+    }
+    doSettingsPost(post_data, 
+        function(data) {
+            console.log(JSON.stringify(data))
+        },
+        function(errMsg) {
+            alert(errMsg);
+        })
 }
 
 function updateSetPoint(value){
@@ -261,14 +286,7 @@ function createPlot(data) {
 }
 
 
-
-
-$(() => {
-
-    // initSettingsHandlers();
-    requestData(createPlot);
-    setInterval(updateData, 15000);
-
+function initSetPointSlider() {
     // For ie8 support
     var $document = $(document);
     var textContent = ('textContent' in document) ? 'textContent' : 'innerText';
@@ -308,6 +326,20 @@ $(() => {
             changeSetPoint(value);
         }
     });
+}
+
+$(() => {
+
+    // initSettingsHandlers();
+    requestData(createPlot);
+    setInterval(updateData, 15000);
+    initSetPointSlider();
+
+    $('#clearWindup').on("click", function(e){
+        // clear windup
+        clearWindup();
+    });
+    
 
     
 

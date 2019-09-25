@@ -76,23 +76,34 @@ class ServerApplication(object):
             except Exception as e:
                 LoggerMgr.warning(str(e))
 
+    def apply_pid_state(self, pid_state_msg):
+        new_pid_state = self.pid_state_model.copy()
 
-    def apply_pid_config(self, config_msg):
-        if 'pid_config' in config_msg:
-            pid_config_msg = config_msg['pid_config']
-            new_pid_config = self.config_model.pid_config.copy()
+        # apply pid_state_msg to new_pid_state
+        try:
+            if new_pid_state.apply(pid_state_msg):
+                LoggerMgr.info("*** applying new state!", color=ConsoleColor.OKBLUE)
+                self.pid_state_model = new_pid_state
+            else:
+                LoggerMgr.info("*** nothing to apply!", color=ConsoleColor.OKBLUE)
+        except ValueError as e:
+            LoggerMgr.warning("******** ValueError: {}".format(str(e)))
+            pass
 
-            # apply pid_config_msg to new_pid_config
-            try:
-                if new_pid_config.apply(pid_config_msg):
-                    LoggerMgr.info("*** applying new configuration!", color=ConsoleColor.OKBLUE)
-                    self.config_model.pid_config = new_pid_config
-                    self.config_model.save_to_file(self.config_file)
-                else:
-                    LoggerMgr.info("*** nothing to apply!", color=ConsoleColor.OKBLUE)
-            except ValueError as e:
-                LoggerMgr.warning("******** ValueError: {}".format(str(e)))
-                pass
+    def apply_pid_config(self, pid_config_msg):
+        new_pid_config = self.config_model.pid_config.copy()
+
+        # apply pid_config_msg to new_pid_config
+        try:
+            if new_pid_config.apply(pid_config_msg):
+                LoggerMgr.info("*** applying new configuration!", color=ConsoleColor.OKBLUE)
+                self.config_model.pid_config = new_pid_config
+                self.config_model.save_to_file(self.config_file)
+            else:
+                LoggerMgr.info("*** nothing to apply!", color=ConsoleColor.OKBLUE)
+        except ValueError as e:
+            LoggerMgr.warning("******** ValueError: {}".format(str(e)))
+            pass
 
     def main_loop(self):
         LoggerMgr.info("Starting ServerApplication.main_loop()")
@@ -104,9 +115,10 @@ class ServerApplication(object):
             if received_message:
                 LoggerMgr.info("*** received message from client", color=ConsoleColor.OKBLUE)
                 LoggerMgr.info("*** message = {}".format(received_message), color=ConsoleColor.OKBLUE)
-                self.apply_pid_config(received_message)
                 if 'pid_config' in received_message:
                     self.apply_pid_config(received_message['pid_config'])
+                if 'pid_state' in received_message:
+                    self.apply_pid_state(received_message['pid_state'])
 
 
             elapsed = stopwatch.elapsed()
