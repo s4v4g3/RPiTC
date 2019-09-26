@@ -1,6 +1,6 @@
 
 var chart;
-var duration = 3600; // default = 1 hr of data
+var duration = 60 * 60 * 24 * 4; // default = 4 days of data
 var skipSetPointUpdate = false;
 
 function doSettingsPost(post_data, success_cb, failure_cb) {
@@ -38,7 +38,7 @@ function changeSetPoint(value) {
 function clearWindup() {
     post_data = {
         pid_state: {
-            error_sum: 0
+            error_sum: 0.0001
         }
     }
     doSettingsPost(post_data, 
@@ -97,29 +97,25 @@ function requestData(callback) {
 }
 
 function buttonCallback(btnData) {
-    console.log(btnData)
-    let range = btnData._range
-    duration = range / 1000
+    duration = 60 * 60 * 24 * 4 // 4 days
     updateData();
 }
 
 function updatePidTable(data) {
-    function appendData(row, value) {
-        row += `<td>${value}</td>`
-        return row
-    }
-    let row = "<tr>"
-    row = appendData(row, data.output)
-    row = appendData(row, data.kp)
-    row = appendData(row, data.kd)
-    row = appendData(row, data.ki)
-    row = appendData(row, data.avg_oven_temp)
-    row = appendData(row, data.oven_temp)
-    row = appendData(row, data.p_term)
-    row = appendData(row, data.d_term)
-    row = appendData(row, data.error_sum)
-    row += "</tr>"
-    $('#pid_data').replaceWith(row);
+    tableData = [
+        data.output,
+        data.kp,
+        data.kd,
+        data.ki,
+        data.avg_oven_temp,
+        data.oven_temp,
+        data.p_term,
+        data.d_term,
+        data.error_sum,
+    ]
+    $('#pid_data td').each(function(i) {
+        $(this).text(`${tableData[i]}`)
+    });
 }
 
 function createPlot(data) {
@@ -139,11 +135,10 @@ function createPlot(data) {
                 type: 'minute',
                 count: 10,
                 text: '10m',
+                preserveDataGrouping: true,
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 0
                         buttonCallback(this);
-                        
                     }
                 }
             },
@@ -153,7 +148,6 @@ function createPlot(data) {
                 text: '1h',
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 1
                         buttonCallback(this);
                     }
                 }
@@ -164,7 +158,6 @@ function createPlot(data) {
                 text: '4h',
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 2
                         buttonCallback(this);
                     }
                 }
@@ -172,10 +165,9 @@ function createPlot(data) {
             {
                 type: 'hour',
                 count: 8,
-                text: '1h',
+                text: '8h',
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 3
                         buttonCallback(this);
                     }
                 }
@@ -186,7 +178,6 @@ function createPlot(data) {
                 text: '12h',
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 4
                         buttonCallback(this);
                     }
                 }
@@ -197,7 +188,6 @@ function createPlot(data) {
                 text: '1d',
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 5
                         buttonCallback(this);
                     }
                 }
@@ -207,7 +197,6 @@ function createPlot(data) {
                 text: '3d',
                 events: {
                     click: function() {
-                        chart.rangeSelector.selected = 6
                         buttonCallback(this);
                     }
                 }
