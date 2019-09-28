@@ -1,6 +1,7 @@
 
 var chart;
-var duration = 60 * 60 * 24 * 4; // default = 4 days of data
+const minDuration = 60 * 60 * 24 * 1; // default = 1 day of data
+var currDuration = minDuration; 
 var skipSetPointUpdate = false;
 
 function doSettingsPost(post_data, success_cb, failure_cb) {
@@ -86,7 +87,7 @@ function updatePlot(data) {
 
 function requestData(callback) {
     $.ajax({
-        url: `/data?sec=${duration}`,
+        url: `/data?sec=${currDuration}`,
         success: function(data) {
             callback(data);
         },
@@ -97,8 +98,23 @@ function requestData(callback) {
 }
 
 function buttonCallback(btnData) {
-    duration = 60 * 60 * 24 * 4 // 4 days
-    updateData();
+    
+    // button range in seconds
+    let btnRange = btnData._range / 1000
+    // add 1hr buffer to avoid button being de-selected
+    btnRange += 3600
+    if (btnRange > currDuration) {
+        // button range exceeds our current duration
+        // so update it and request the data
+        currDuration = btnRange;
+        updateData();
+    }
+    else {
+        // button range is smaller than the current
+        // duration.  Just decrease duration for the next
+        // data update but don't force another update
+        currDuration = btnRange
+    }
 }
 
 function updatePidTable(data) {
@@ -131,11 +147,11 @@ function createPlot(data) {
 
         rangeSelector: {
             allButtonsEnabled: true,
+            selected: 3, // 8 hr
             buttons: [{
                 type: 'minute',
                 count: 10,
                 text: '10m',
-                preserveDataGrouping: true,
                 events: {
                     click: function() {
                         buttonCallback(this);
