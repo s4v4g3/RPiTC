@@ -3,15 +3,9 @@ var router = express.Router();
 var mysql = require('mysql')
 var zmq = require('zeromq')
 
-var hostname = "10.4.1.240"
+var hostname = "localhost"
 
-var pool = mysql.createPool({
-    connectionLimit: 100,
-    host: hostname,
-    user: "bbq",
-    password: "bbq",
-    database: "bbq"
-});
+
 
 
 /* GET settings page. */
