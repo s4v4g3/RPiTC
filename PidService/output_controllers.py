@@ -1,4 +1,4 @@
-
+from data_logger import LoggerMgr, ConsoleColor
 
 __all__ = ["get_output_controller_factory", "MockOutputController"]
 
@@ -22,11 +22,17 @@ class RPiPWMOutputController(OutputControllerBase):
         self.pi = pigpio.pi()
         self.pin = 13
         self.pi.set_PWM_range(self.pin, 100)
-        self.pi.set_PWM_dutycycle(self.pin, 0)
-
+        self.pi.set_PWM_frequency(self.pin, 0)
+        LoggerMgr.info("RPiPWMOutputController: PWM frequency = {}", self.pi.get_PWM_frequency(self.pin))
+        self.output = 0
+        LoggerMgr.info("RPiPWMOutputController: setting output = {}", self.output)
+        self.pi.set_PWM_dutycycle(self.pin, self.output)
 
     def set_output(self, output):
-        self.pi.set_PWM_dutycycle(self.pin, output)
+        if output != self.output:
+            self.output = output
+            LoggerMgr.info("RPiPWMOutputController: setting output = {}", self.output)
+            self.pi.set_PWM_dutycycle(self.pin, self.output)
 
 
 class OutputControllerFactory(object):
