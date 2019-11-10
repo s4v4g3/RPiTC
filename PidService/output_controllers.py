@@ -1,4 +1,5 @@
 
+
 __all__ = ["get_output_controller_factory", "MockOutputController"]
 
 class OutputControllerBase(object):
@@ -16,8 +17,16 @@ class MockOutputController(OutputControllerBase):
 
 class RPiPWMOutputController(OutputControllerBase):
 
+    def __init__(self):
+        import pigpio
+        self.pi = pigpio.pi()
+        self.pin = 13
+        self.pi.set_PWM_range(self.pin, 100)
+        self.pi.set_PWM_dutycycle(self.pin, 0)
+
+
     def set_output(self, output):
-        pass
+        self.pi.set_PWM_dutycycle(self.pin, output)
 
 
 class OutputControllerFactory(object):
