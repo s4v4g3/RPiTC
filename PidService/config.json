@@ -1,6 +1,6 @@
 {
    "pid_config": {
-      "set_point": 225,
+      "set_point": 0,
       "kb": 0.0,
       "kp": 5.0,
       "ki": 0.005,
