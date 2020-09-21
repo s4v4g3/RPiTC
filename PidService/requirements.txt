@@ -1,6 +1,6 @@
-libpigpiod-dev
+pigpio
 sqlalchemy
 mysql
-mysqlconnector
+mysql-connector
 mysqlclient
 zmq
