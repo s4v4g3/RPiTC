@@ -12,6 +12,8 @@ services:
        POSTGRES_DB: bbq
        POSTGRES_USER: bbq
        POSTGRES_PASSWORD: bbq
+     ports:
+       - "5432:5432"
    pidservice:
      depends_on:
        - bbq_db
