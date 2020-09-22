@@ -26,7 +26,7 @@ services:
        - "12355:12355"
      #stdin_open: true
      #tty: true
-     #entrypoint: /bin/bash
+     entrypoint: python3 server_main.py
      restart: always
      environment:
        PIGPIO_ADDR: 172.18.0.1
