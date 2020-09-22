@@ -2,16 +2,16 @@ version: '3.3'
 
 services:
    bbq_db:
-     image: mysql:5.7
+     build:
+       dockerfile: Dockerfile
+       context: ./database
      volumes:
-       - bbq_data:/var/lib/mysql
+       - bbq_data:/var/lib/postgresql/data
      restart: always
      environment:
-       MYSQL_ROOT_PASSWORD: bbq
-       MYSQL_DATABASE: bbq
-       MYSQL_USER: bbq
-       MYSQL_PASSWORD: bbq
-
+       POSTGRES_DB: bbq
+       POSTGRES_USER: bbq
+       POSTGRES_PASSWORD: bbq
    pidservice:
      depends_on:
        - bbq_db
@@ -26,7 +26,7 @@ services:
      environment:
        PIGPIO_ADDR: host.docker.internal
        PIGPIO_PORT: 8888
-       DB_CONNECTION_STRING: mysql+mysqlconnector://bbq:bbq@bbq_db/bbq
+       DB_CONNECTION_STRING: postgresql+pg8000://bbq:bbq@bbq_db/bbq
 volumes:
     bbq_data: {}
     bbq_config: {}
