@@ -14,6 +14,20 @@ services:
        POSTGRES_PASSWORD: bbq
      ports:
        - "5432:5432"
+   webserver:
+     build:
+       dockerfile: Dockerfile
+       context: ./webserver
+     ports:
+       - "8080:8080"
+     restart: always
+     environment:
+       DB_HOST: bbq_db
+       DB_USER: bbq
+       DB_PASSWORD: bbq
+       DB_DBNAME: bbq
+       DB_PORT: 5432
+       PIDSERVICE_HOST: pidservice
    pidservice:
      depends_on:
        - bbq_db
