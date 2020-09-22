@@ -2,6 +2,7 @@ from node
 
 WORKDIR app
 COPY . .
-RUN NPM INSTALL
+RUN npm install
 
-CMD NPM RUN START
+CMD npm run start
+
