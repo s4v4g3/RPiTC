@@ -24,9 +24,12 @@ services:
        - bbq_config:/config
      ports:
        - "12355:12355"
+     stdin_open: true # docker run -i
+     tty: true        # docker run -t
+     entrypoint: /bin/bash
      restart: always
      environment:
-       PIGPIO_ADDR: host.docker.internal
+       PIGPIO_ADDR: 172.18.0.1
        PIGPIO_PORT: 8888
        DB_CONNECTION_STRING: postgresql+pg8000://bbq:bbq@bbq_db/bbq
 volumes:
