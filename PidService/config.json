@@ -1,8 +1,5 @@
 {
    "env_config": {
-      "PIGPIO_ADDR": "pibbq.savage.zone",
-      "PIGPIO_PORT": "8888",
-      "DB_CONNECTION_STRING": "mysql+mysqlconnector://bbq:bbq@pibbq.savage.zone/bbq"
    },
    "pid_config": {
       "set_point": 0,

@@ -11,6 +11,7 @@ from stopwatch import Stopwatch
 from data_logger import LoggerMgr, ConsoleColor
 from db_manager import DbManager
 import os
+import shutil
 
 
 def test_main():
@@ -143,6 +144,13 @@ class ServerApplication(object):
 
 
 if __name__ == "__main__":
-    app = ServerApplication("config.json", get_temp_provider_factory(), get_output_controller_factory(),
+    config_dir = '/config'
+    config_file = config_path = 'config.json'
+    if os.path.isdir(config_dir):
+        config_path = os.path.join(config_dir, config_file)
+        if not os.path.isfile(config_path):
+            shutil.copyfile(config_file, config_path)
+
+    app = ServerApplication(config_path, get_temp_provider_factory(), get_output_controller_factory(),
                             PidController())
     app.main_loop()
