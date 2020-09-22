@@ -1,0 +1,7 @@
+from node
+
+WORKDIR app
+COPY . .
+RUN NPM INSTALL
+
+CMD NPM RUN START

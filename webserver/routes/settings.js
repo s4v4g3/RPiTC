@@ -3,9 +3,7 @@ var router = express.Router();
 var mysql = require('mysql')
 var zmq = require('zeromq')
 
-var hostname = "localhost"
-
-
+var hostname = process.env.PIDSERVICE_HOST || "pibbq.savage.zone"
 
 
 /* GET settings page. */
