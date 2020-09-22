@@ -26,6 +26,7 @@ function changeSetPoint(value) {
             set_point: value
         }
     }
+    console.log(`changing setpoint to ${value}`)
     doSettingsPost(post_data, 
         function(data) {
             skipSetPointUpdate = true

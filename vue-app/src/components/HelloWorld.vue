@@ -1,151 +1,251 @@
 <template>
-  <v-container>
-    <v-row class="text-center">
-      <v-col cols="12">
-        <v-img
-          :src="require('../assets/logo.svg')"
-          class="my-3"
-          contain
-          height="200"
-        />
-      </v-col>
-
-      <v-col class="mb-4">
-        <h1 class="display-2 font-weight-bold mb-3">
-          Welcome to Vuetify
-        </h1>
-
-        <p class="subheading font-weight-regular">
-          For help and collaboration with other Vuetify developers,
-          <br>please join our online
-          <a
-            href="https://community.vuetifyjs.com"
-            target="_blank"
-          >Discord Community</a>
-        </p>
-      </v-col>
-
-      <v-col
-        class="mb-5"
-        cols="12"
-      >
-        <h2 class="headline font-weight-bold mb-3">
-          What's next?
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(next, i) in whatsNext"
-            :key="i"
-            :href="next.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ next.text }}
-          </a>
+    <v-container>
+        <v-row class="text-center">
+            <v-col cols="12">
+                <highcharts :constructor-type="'stockChart'" :options="chartOptions" ref="chart" />
+            </v-col>
         </v-row>
-      </v-col>
-
-      <v-col
-        class="mb-5"
-        cols="12"
-      >
-        <h2 class="headline font-weight-bold mb-3">
-          Important Links
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(link, i) in importantLinks"
-            :key="i"
-            :href="link.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ link.text }}
-          </a>
-        </v-row>
-      </v-col>
-
-      <v-col
-        class="mb-5"
-        cols="12"
-      >
-        <h2 class="headline font-weight-bold mb-3">
-          Ecosystem
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(eco, i) in ecosystem"
-            :key="i"
-            :href="eco.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ eco.text }}
-          </a>
-        </v-row>
-      </v-col>
-    </v-row>
-  </v-container>
+    </v-container>
 </template>
 
 <script>
-  export default {
-    name: 'HelloWorld',
+import axios from "axios";
+export default {
+    name: "Chart",
 
     data: () => ({
-      ecosystem: [
-        {
-          text: 'vuetify-loader',
-          href: 'https://github.com/vuetifyjs/vuetify-loader',
+        // stuff here
+        chartOptions: {
+            rangeSelector: {
+                allButtonsEnabled: true,
+                selected: 3, // 8 hr
+                buttons: [
+                    {
+                        type: "minute",
+                        count: 10,
+                        text: "10m",
+                        events: {
+                            click: function () {},
+                        },
+                    },
+                    {
+                        type: "hour",
+                        count: 1,
+                        text: "1h",
+                        events: {
+                            click: () => {},
+                        },
+                    },
+                    {
+                        type: "hour",
+                        count: 4,
+                        text: "4h",
+                        events: {
+                            click: function () {},
+                        },
+                    },
+                    {
+                        type: "hour",
+                        count: 8,
+                        text: "8h",
+                        events: {
+                            click: function () {},
+                        },
+                    },
+                    {
+                        type: "hour",
+                        count: 12,
+                        text: "12h",
+                        events: {
+                            click: function () {},
+                        },
+                    },
+                    {
+                        type: "day",
+                        count: 1,
+                        text: "1d",
+                        events: {
+                            click: function () {},
+                        },
+                    },
+                    {
+                        type: "day",
+                        count: 3,
+                        text: "3d",
+                        events: {
+                            click: function () {},
+                        },
+                    },
+                    {
+                        type: "all",
+                        text: "All",
+                        events: {
+                            click: function () {
+                                /*
+                        chart.rangeSelector.selected = 7
+                        console.log(this)
+                        duration = 450000000 // 10 yr
+                        updateData();
+                        */
+                            },
+                        },
+                    },
+                ],
+            },
+
+            title: {
+                text: "Big Green Egg Temperature",
+            },
+            xAxis: {
+                type: "datetime",
+                labels: {
+                    format: "{value:%b%e %l:%M %p}",
+                },
+                events: {
+                    setExtremes: function (e) {
+                        console.log(this);
+                        if (typeof e.rangeSelectorButton !== "undefined") {
+                            console.log("setExtremes:");
+                            console.log(
+                                `count: ${e.rangeSelectorButton.count}  text: ${e.rangeSelectorButton.text} type: ${e.rangeSelectorButton.type}`
+                            );
+                            let btnRange = e.rangeSelectorButton._range / 1000;
+                            btnRange += 3600;
+                            if (btnRange > this.currDuration) {
+                                // button range exceeds our current duration
+                                // so update it and request the data
+                                this.currDuration = btnRange;
+                                this.requestData();
+                            } else {
+                                // button range is smaller than the current
+                                // duration.  Just decrease duration for the next
+                                // data update but don't force another update
+                                this.currDuration = btnRange;
+                            }
+                        }
+                    },
+                },
+            },
+            yAxis: [
+                {
+                    opposite: true,
+                    title: {
+                        text: "temperature",
+                    },
+                },
+                {
+                    opposite: false,
+                    title: {
+                        text: "output",
+                    },
+                    labels: {
+                        align: "left",
+                    },
+                    min: 0,
+                    max: 100,
+                },
+            ],
+
+            series: [
+                {
+                    name: "Pit Temperature",
+                    data: [],
+                    tooltip: {
+                        valueDecimals: 2,
+                    },
+                },
+                {
+                    name: "Set Point",
+                    data: [],
+                    tooltip: {
+                        valueDecimals: 0,
+                    },
+                },
+                {
+                    name: "Output",
+                    data: [],
+                    tooltip: {
+                        valueDecimals: 0,
+                    },
+                    yAxis: 1,
+                },
+            ],
         },
-        {
-          text: 'github',
-          href: 'https://github.com/vuetifyjs/vuetify',
-        },
-        {
-          text: 'awesome-vuetify',
-          href: 'https://github.com/vuetifyjs/awesome-vuetify',
-        },
-      ],
-      importantLinks: [
-        {
-          text: 'Documentation',
-          href: 'https://vuetifyjs.com',
-        },
-        {
-          text: 'Chat',
-          href: 'https://community.vuetifyjs.com',
-        },
-        {
-          text: 'Made with Vuetify',
-          href: 'https://madewithvuejs.com/vuetify',
-        },
-        {
-          text: 'Twitter',
-          href: 'https://twitter.com/vuetifyjs',
-        },
-        {
-          text: 'Articles',
-          href: 'https://medium.com/vuetify',
-        },
-      ],
-      whatsNext: [
-        {
-          text: 'Explore components',
-          href: 'https://vuetifyjs.com/components/api-explorer',
-        },
-        {
-          text: 'Select a layout',
-          href: 'https://vuetifyjs.com/getting-started/pre-made-layouts',
-        },
-        {
-          text: 'Frequently Asked Questions',
-          href: 'https://vuetifyjs.com/getting-started/frequently-asked-questions',
-        },
-      ],
+        pitTempData: [],
+        setPointData: [],
+        outputData: [],
+        currDuration: 3600,
+        interval: null,
     }),
-  }
+    created() {
+        /*
+        this.chartOptions.rangeSelector.buttons.forEach((button, i) => {
+            button.events.click = (event) => {
+                this.buttonCallback(event, i);
+            };
+        });
+        */
+        this.chartOptions.xAxis.events.setExtremes = (e) => {
+            this.buttonCallback(e);
+        };
+        this.interval = setInterval(this.requestData, 15000);
+        this.requestData();
+    },
+    destroyed() {
+        console.log("Destroying!")
+        clearInterval(this.interval)
+    },
+    methods: {
+        requestData() {
+            let url = `http://pibbq.savage.zone/data?sec=${this.currDuration}`;
+            console.log(url)
+            axios.get(url).then((response) => {
+                console.log(response)
+                this.pitTempData = response.data.map((a) => [
+                    a.local_time * 1000,
+                    a.oven_temp,
+                ]);
+                this.setPointData = response.data.map((a) => [
+                    a.local_time * 1000,
+                    a.set_point,
+                ]);
+                this.outputData = response.data.map((a) => [
+                    a.local_time * 1000,
+                    a.output,
+                ]);
+                this.chartOptions.series[0].data = this.pitTempData
+                this.chartOptions.series[1].data = this.setPointData
+                this.chartOptions.series[2].data = this.outputData
+                
+                //this.$refs.chart.chart.series[0].setData(this.pitTempData);
+                //this.$refs.chart.chart.series[1].setData(this.setPointData);
+                //this.$refs.chart.chart.series[2].setData(this.outputData);
+            });
+        },
+        buttonCallback(e) {
+            if (typeof e.rangeSelectorButton !== "undefined") {
+                console.log("setExtremes:");
+                console.log(e)
+                console.log(
+                    `count: ${e.rangeSelectorButton.count}  text: ${e.rangeSelectorButton.text} type: ${e.rangeSelectorButton.type}  range: ${e.rangeSelectorButton._range }`
+                );
+                let btnRange = e.rangeSelectorButton._range / 1000;
+                if (isNaN(btnRange)) btnRange = 450000000
+                console.log(btnRange)
+                btnRange += 3600;
+                if (btnRange > this.currDuration) {
+                    // button range exceeds our current duration
+                    // so update it and request the data
+                    this.currDuration = btnRange;
+                    this.requestData();
+                } else {
+                    // button range is smaller than the current
+                    // duration.  Just decrease duration for the next
+                    // data update but don't force another update
+                    this.currDuration = btnRange;
+                }
+            }
+        },
+    },
+};
 </script>

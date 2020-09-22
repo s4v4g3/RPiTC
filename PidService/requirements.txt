@@ -4,3 +4,5 @@ mysql
 mysql-connector
 mysqlclient
 zmq
+six
+py-dateutil

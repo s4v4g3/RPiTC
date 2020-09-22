@@ -52,4 +52,8 @@ router.get('/', function(req, res, next) {
     });
 });
 
+router.get('/latest', function(req, res, next) {
+    
+})
+
 module.exports = router;

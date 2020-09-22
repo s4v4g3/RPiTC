@@ -10,6 +10,7 @@ import zmq
 from stopwatch import Stopwatch
 from data_logger import LoggerMgr, ConsoleColor
 from db_manager import DbManager
+import os
 
 
 def test_main():
@@ -35,6 +36,8 @@ class ServerApplication(object):
         self.config_file = config_file
         self.config_model = ConfigModel.load_from_file(self.config_file)
         self.config_model.save_to_file(self.config_file)
+        for key in self.config_model.env_config:
+            os.environ[key] = self.config_model.env_config[key]
         LoggerMgr.configure(self.config_model.logging)
         self.oven_temp_provider = temp_provider_factory.CreateTempProvider(self.config_model.io_config.oven_temp_provider, 'Oven')
         self.opt_temp_providers =[]

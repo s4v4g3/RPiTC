@@ -66,6 +66,9 @@ class IOConfigModel(DotDict):
 
 
 class ConfigModel(DotDict):
+    env_config = None # type: dict
+    """dict: Environment Config"""
+
     pid_config = None # type: PIDConfigModel
     """PIDConfigModel: PID Config"""
 

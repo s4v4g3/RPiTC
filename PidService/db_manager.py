@@ -4,8 +4,11 @@ import datetime
 import hashlib
 import json
 from dateutil import tz
+import os
 
 __all__ = ["DbManager"]
+
+DEFAULT_CONNECTION_STRING = 'mysql+mysqlconnector://bbq:bbq@localhost/bbq'
 
 class DbManager(object):
 
@@ -18,7 +21,8 @@ class DbManager(object):
 class AlchemyEngine(object):
 
     def __init__(self):
-        self.engine = db.create_engine('mysql+mysqlconnector://bbq:bbq@localhost/bbq')
+        conn_str = os.environ.get('DB_CONNECTION_STRING', DEFAULT_CONNECTION_STRING)
+        self.engine = db.create_engine(conn_str)
         self.connection = self.engine.connect()
         metadata = db.MetaData()
         self.pid_state_table = db.Table('pid_state', metadata, autoload=True, autoload_with=self.engine)
