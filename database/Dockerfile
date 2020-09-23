@@ -1,4 +1,4 @@
-from postgres
+from postgres:alpine
 
 WORKDIR /docker-entrypoint-initdb.d
 COPY . .

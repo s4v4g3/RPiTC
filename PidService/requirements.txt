@@ -1,6 +1,6 @@
 pigpio
 sqlalchemy
 pg8000
-zmq
+pyzmq
 six
 py-dateutil
