@@ -43,9 +43,10 @@ services:
      entrypoint: python3 server_main.py
      restart: always
      environment:
-       PIGPIO_ADDR: 172.18.0.1
+       PIGPIO_ADDR: pibbq.savage.zone
        PIGPIO_PORT: 8888
        DB_CONNECTION_STRING: postgresql+pg8000://bbq:bbq@bbq_db/bbq
+       TZ: America/Chicago
 volumes:
     bbq_data: {}
     bbq_config: {}
