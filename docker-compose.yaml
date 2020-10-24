@@ -28,6 +28,7 @@ services:
        DB_DBNAME: bbq
        DB_PORT: 5432
        PIDSERVICE_HOST: pidservice
+       TZ: America/Chicago
    pidservice:
      depends_on:
        - bbq_db
