@@ -4,3 +4,4 @@ pg8000
 pyzmq
 six
 py-dateutil
+paho-mqtt
