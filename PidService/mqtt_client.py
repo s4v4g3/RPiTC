@@ -15,6 +15,7 @@ class MqttClient():
         if username is not None and password is not None:
             self.client.username_pw_set(username, password)
         self.client.connect(server)
+        self.client.loop_start()
 
     def on_connect(self, client, userdata, flags, rc):
         LoggerMgr.info("Connected to MQTT Server")
