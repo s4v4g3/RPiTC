@@ -12,6 +12,7 @@ from data_logger import LoggerMgr, ConsoleColor
 from db_manager import DbManager
 import os
 import shutil
+from mqtt_client import MqttClient
 
 
 def test_main():
@@ -59,6 +60,8 @@ class ServerApplication(object):
 
         # db connector
         self.db_engine = DbManager.create_db_engine()
+
+        self.mqtt_client = MqttClient('bbq/status', 'mosquitto.savage.zone', 1883)
 
     def run_pid(self):
         self.pid.pid_iteration(self.pid_interval, self.config_model.pid_config, self.pid_state_model, self.oven_temp_provider, self.opt_temp_providers,
@@ -124,17 +127,16 @@ class ServerApplication(object):
                 if 'pid_state' in received_message:
                     self.apply_pid_state(received_message['pid_state'])
 
-
             elapsed = stopwatch.elapsed()
             if elapsed < self.pid_interval:
                 time.sleep(self.pid_interval - elapsed)
-
 
             self.run_pid()
 
             db_insert_interval = 15
             if iteration % db_insert_interval == 0:
                 self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
+                self.mqtt_client.publish({ **self.config_model.pid_config.as_dict(), **self.pid_state_model.as_dict() })
             iteration += 1
 
             if received_message is not None:
