@@ -5,7 +5,7 @@ import six
 import json
 from dot_dict import DotDict
 
-__all__ = ["PIDConfigModel", "PID_CONFIG_DEFAULTS"]
+__all__ = ["PIDConfigModel", "PID_CONFIG_DEFAULTS", "create_gauges", "update_gauges"]
 
 PID_CONFIG_DEFAULTS = {
     "set_point": 225,
@@ -17,7 +17,15 @@ PID_CONFIG_DEFAULTS = {
     "max_output": 100.0
 }
 
+def create_gauges(gauge_class):
+    gauges = {}
+    for key in PID_CONFIG_DEFAULTS:
+        gauges[key] = gauge_class(key, key)
+    return gauges
 
+def update_gauges(gauges, config_model):
+    for key in gauges:
+        gauges[key].set(config_model[key])
 
 class PIDConfigModel(DotDict):
     """

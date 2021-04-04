@@ -1,6 +1,6 @@
 from pid import PidController
-from pid_state_model import PIDStateModel
-from pid_config_model import PIDConfigModel
+from pid_state_model import PIDStateModel, create_gauges as create_state_gauges, update_gauges as update_state_gauges
+from pid_config_model import PIDConfigModel, create_gauges as create_config_gauges, update_gauges as update_config_gauges
 from config_model import ConfigModel
 from output_controllers import *
 from temp_providers import *
@@ -13,7 +13,15 @@ from db_manager import DbManager
 import os
 import shutil
 from mqtt_client import MqttClient
+from prometheus_client import start_http_server, Gauge
 
+state_gauges = create_state_gauges(Gauge)
+config_gauges = create_config_gauges(Gauge)
+
+
+class StateStorage:
+    config_model = {}
+    state_model = {}
 
 def test_main():
     pid_config = PIDConfigModel.convert_json_data_to_model({})
@@ -59,7 +67,7 @@ class ServerApplication(object):
         self.poller.register(self.socket, zmq.POLLIN)
 
         # db connector
-        self.db_engine = DbManager.create_db_engine()
+        #self.db_engine = DbManager.create_db_engine()
 
         self.mqtt_client = MqttClient('bbq/status', 'mosquitto.savage.zone', 1883)
 
@@ -135,14 +143,21 @@ class ServerApplication(object):
 
             db_insert_interval = 15
             if iteration % db_insert_interval == 0:
-                self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
+                #self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
                 self.mqtt_client.publish({ **self.config_model.pid_config.as_dict(), **self.pid_state_model.as_dict() })
+                StateStorage.config_model = self.config_model.pid_config
+                StateStorage.state_model = self.pid_state_model
+
+                update_state_gauges(state_gauges, self.pid_state_model)
+                update_config_gauges(config_gauges, self.config_model.pid_config)
+
             iteration += 1
 
             if received_message is not None:
                 # send reply with state
                 LoggerMgr.info("*** sending message back to client", color=ConsoleColor.OKBLUE)
                 self.socket.send_json(self.pid_state_model.as_dict())
+
 
 
 if __name__ == "__main__":
@@ -152,6 +167,8 @@ if __name__ == "__main__":
         config_path = os.path.join(config_dir, config_file)
         if not os.path.isfile(config_path):
             shutil.copyfile(config_file, config_path)
+
+    start_http_server(9009)
 
     app = ServerApplication(config_path, get_temp_provider_factory(), get_output_controller_factory(),
                             PidController())

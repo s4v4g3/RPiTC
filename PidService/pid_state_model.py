@@ -5,7 +5,7 @@ import six
 import json
 from dot_dict import DotDict
 
-__all__ = ["PIDStateModel", "PID_STATE_DEFAULTS"]
+__all__ = ["PIDStateModel", "PID_STATE_DEFAULTS", 'create_gauges', 'update_gauges']
 
 PID_STATE_DEFAULTS = {
     "last_oven_temp": 0.0,
@@ -15,7 +15,15 @@ PID_STATE_DEFAULTS = {
     "opt_probe_temps": {}
 }
 
+def create_gauges(gauge_class):
+    gauges = {}
+    for key in PID_STATE_DEFAULTS:
+        gauges[key] = gauge_class(key, key)
+    return gauges
 
+def update_gauges(gauges, state_model):
+    for key in gauges:
+        gauges[key].set(state_model[key])
 
 class PIDStateModel(DotDict):
     """
