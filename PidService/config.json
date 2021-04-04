@@ -25,14 +25,6 @@
             "formatter": "default",
             "stream": "ext://sys.stdout"
          },
-         "file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "default",
-            "filename": "log.txt",
-            "maxBytes": 1048576,
-            "backupCount": 8
-         },
          "loki": {
             "level": "DEBUG",
             "class": "logging_loki.LokiHandler",
