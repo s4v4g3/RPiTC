@@ -18,7 +18,8 @@ PID_STATE_DEFAULTS = {
 def create_gauges(gauge_class):
     gauges = {}
     for key in PID_STATE_DEFAULTS:
-        gauges[key] = gauge_class(key, key)
+        if not isinstance(PID_STATE_DEFAULTS[key], dict):
+            gauges[key] = gauge_class(key, key)
     return gauges
 
 def update_gauges(gauges, state_model):
