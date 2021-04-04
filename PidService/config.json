@@ -39,7 +39,6 @@
             "level": "DEBUG",
             "handlers": [
                "console",
-               "file",
                "loki"
             ]
          }
