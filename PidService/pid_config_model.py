@@ -20,7 +20,7 @@ PID_CONFIG_DEFAULTS = {
 def create_gauges(gauge_class):
     gauges = {}
     for key in PID_CONFIG_DEFAULTS:
-        gauges[key] = gauge_class(key, key)
+        gauges[key] = gauge_class(f"bbq_config_{key}", f"BBQ Config value of {key}")
     return gauges
 
 def update_gauges(gauges, config_model):

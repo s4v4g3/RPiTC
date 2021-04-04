@@ -19,7 +19,7 @@ def create_gauges(gauge_class):
     gauges = {}
     for key in PID_STATE_DEFAULTS:
         if not isinstance(PID_STATE_DEFAULTS[key], dict):
-            gauges[key] = gauge_class(key, key)
+            gauges[key] = gauge_class(f"bbq_state_{key}", f"BBQ State value of {key}")
     return gauges
 
 def update_gauges(gauges, state_model):
