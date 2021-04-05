@@ -156,7 +156,7 @@ class ServerApplication(object):
 
                 try:
                     r = session.get('https://homeassistant.savage.zone/api/states/input_number.bbq_temperature_set_point', headers={"Authorization": f"Bearer {ha_token}"})
-                    new_set_point = int(r.json()['state'])
+                    new_set_point = int(float(r.json()['state']))
                     if new_set_point != self.config_model.pid_config.set_point:
                         pid_config = {'set_point': new_set_point}
                         self.apply_pid_config(pid_config)
