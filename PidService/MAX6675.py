@@ -5,7 +5,7 @@
 # Public Domain
 
 import time
-import pigpio # http://abyz.co.uk/rpi/pigpio/python.html
+import pigpio  # http://abyz.co.uk/rpi/pigpio/python.html
 
 """
 This script reads the temperature of a type K thermocouple
@@ -36,7 +36,7 @@ often the sensor will always return the last read value.
 pi = pigpio.pi()
 
 if not pi.connected:
-   exit(0)
+    exit(0)
 
 # pi.spi_open(0, 1000000, 0)   # CE0, 1Mbps, main SPI
 # pi.spi_open(1, 1000000, 0)   # CE1, 1Mbps, main SPI
@@ -44,23 +44,22 @@ if not pi.connected:
 # pi.spi_open(1, 1000000, 256) # CE1, 1Mbps, auxiliary SPI
 # pi.spi_open(2, 1000000, 256) # CE2, 1Mbps, auxiliary SPI
 
-sensor = pi.spi_open(0, 1000000, 0) # CE0, 1Mbps, main SPI
+sensor = pi.spi_open(0, 1000000, 0)  # CE0, 1Mbps, main SPI
 
 stop = time.time() + 600
 
 while time.time() < stop:
-   c, d = pi.spi_read(sensor, 2)
-   if c == 2:
-      word = (d[0]<<8) | d[1]
-      if (word & 0x8006) == 0: # Bits 15, 2, and 1 should be zero.
-         t = (word >> 3)/4.0
-         t = t * 1.8 + 32
-         print("{:.2f}".format(t))
-      else:
-         print("bad reading {:b}".format(word))
-   time.sleep(0.25) # Don't try to read more often than 4 times a second.
+    c, d = pi.spi_read(sensor, 2)
+    if c == 2:
+        word = (d[0] << 8) | d[1]
+        if (word & 0x8006) == 0:  # Bits 15, 2, and 1 should be zero.
+            t = (word >> 3) / 4.0
+            t = t * 1.8 + 32
+            print("{:.2f}".format(t))
+        else:
+            print("bad reading {:b}".format(word))
+    time.sleep(0.25)  # Don't try to read more often than 4 times a second.
 
 pi.spi_close(sensor)
 
 pi.stop()
-

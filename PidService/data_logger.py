@@ -8,21 +8,20 @@ __all__ = ["LoggerMgr", "ConsoleColor"]
 
 
 class ConsoleColor:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-    CYAN = '\033[96m'
-    RED = '\033[91m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKGREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+    CYAN = "\033[96m"
+    RED = "\033[91m"
 
 
 class LoggerMgr(object):
-
     @classmethod
     def configure(cls, config):
         logging.config.dictConfig(config)
@@ -34,7 +33,7 @@ class LoggerMgr(object):
             frm = inspect.stack()[2]
             mod = inspect.getmodule(frm[0])
             name_array = mod.__name__
-            name = name_array.rpartition('.')[2]
+            name = name_array.rpartition(".")[2]
         except (ValueError, ImportError, IndexError, AttributeError, IOError):
             name = ""
         return logging.getLogger(name)
@@ -115,13 +114,15 @@ class LoggerMgr(object):
     def Line(color=ConsoleColor.RED):
         _log = LoggerMgr.get_module_logger()
         print(color, end="")
-        _log.info("*************************************************************************************")
+        _log.info(
+            "*************************************************************************************"
+        )
         print(ConsoleColor.ENDC, end="")
 
     @staticmethod
     def setConsoleLevel(level):
         for handler in logging.getLogger().handlers:
-            if type(handler).__name__ == 'StreamHandler':
+            if type(handler).__name__ == "StreamHandler":
                 handler.setLevel(level)
 
     @staticmethod
@@ -130,10 +131,14 @@ class LoggerMgr(object):
         handler_array = logger.handlers
         for ihandler in range(0, len(handler_array)):
             handler = handler_array[ihandler]
-            if type(handler).__name__ == 'RotatingFileHandler':
+            if type(handler).__name__ == "RotatingFileHandler":
                 from logging.handlers import RotatingFileHandler
-                new_handler = RotatingFileHandler(os.path.join(path, os.path.basename(handler.baseFilename)),
-                                                  handler.maxBytes, handler.backupCount)
+
+                new_handler = RotatingFileHandler(
+                    os.path.join(path, os.path.basename(handler.baseFilename)),
+                    handler.maxBytes,
+                    handler.backupCount,
+                )
                 new_handler.setLevel(handler.level)
                 new_handler.setFormatter(handler.formatter)
                 logger.removeHandler(handler)
@@ -146,8 +151,12 @@ class LoggerMgr(object):
         handler_array = logger.handlers
         for ihandler in range(0, len(handler_array)):
             handler = handler_array[ihandler]
-            if type(handler).__name__ in ['RotatingFileHandler', 'ConcurrentRotatingFileHandler']:
+            if type(handler).__name__ in [
+                "RotatingFileHandler",
+                "ConcurrentRotatingFileHandler",
+            ]:
                 from logging import FileHandler
+
                 test_handler = FileHandler(path)
                 test_handler.setLevel(handler.level)
                 test_handler.setFormatter(handler.formatter)

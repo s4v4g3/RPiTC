@@ -3,9 +3,7 @@ from data_logger import LoggerMgr
 import json
 
 
-
-
-class MqttClient():
+class MqttClient:
     def __init__(self, topic, server, port, username=None, password=None):
         self.connected = False
         self.topic = topic

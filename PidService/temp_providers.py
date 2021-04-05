@@ -3,16 +3,16 @@ from data_logger import LoggerMgr
 
 __all__ = ["get_temp_provider_factory", "MockTempProvider"]
 
-class TempProviderBase(object):
 
+class TempProviderBase(object):
     def __init__(self, label):
         self.label = label
 
     def read_temp(self):
         return 0
 
-class MockTempProvider(TempProviderBase):
 
+class MockTempProvider(TempProviderBase):
     def __init__(self, label="Oven"):
         self.temp = 0.0
         super().__init__(label)
@@ -20,16 +20,17 @@ class MockTempProvider(TempProviderBase):
     def read_temp(self):
         return self.temp
 
-#constants
+
+# constants
 SPI_BYTES_TO_READ = 2
 
+
 class RPiMAX6675TempProvider(TempProviderBase):
-
-
     def __init__(self, label="Oven"):
         self.temp = 0.0
         super().__init__(label)
         import pigpio
+
         self.pi = pigpio.pi()
 
         if not self.pi.connected:
@@ -54,25 +55,20 @@ class RPiMAX6675TempProvider(TempProviderBase):
                 else:
                     continue
         # unable to read after 5 tries
-        self.temp = float('nan')
+        self.temp = float("nan")
         return self.temp
 
-class TempProviderFactory(object):
 
+class TempProviderFactory(object):
     def CreateTempProvider(self, temp_provider_class, label):
         return None
 
-class RealTempProviderFactory(TempProviderFactory):
 
+class RealTempProviderFactory(TempProviderFactory):
     def CreateTempProvider(self, temp_provider_class, label):
         klass = eval(temp_provider_class)
         return klass(label)
 
+
 def get_temp_provider_factory():
     return RealTempProviderFactory()
-
-
-
-
-
-

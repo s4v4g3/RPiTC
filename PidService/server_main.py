@@ -1,6 +1,14 @@
 from pid import PidController
-from pid_state_model import PIDStateModel, create_gauges as create_state_gauges, update_gauges as update_state_gauges
-from pid_config_model import PIDConfigModel, create_gauges as create_config_gauges, update_gauges as update_config_gauges
+from pid_state_model import (
+    PIDStateModel,
+    create_gauges as create_state_gauges,
+    update_gauges as update_state_gauges,
+)
+from pid_config_model import (
+    PIDConfigModel,
+    create_gauges as create_config_gauges,
+    update_gauges as update_config_gauges,
+)
 from config_model import ConfigModel
 from output_controllers import *
 from temp_providers import *
@@ -20,10 +28,6 @@ state_gauges = create_state_gauges(Gauge)
 config_gauges = create_config_gauges(Gauge)
 
 
-class StateStorage:
-    config_model = {}
-    state_model = {}
-
 def test_main():
     pid_config = PIDConfigModel.convert_json_data_to_model({})
     pid_state = PIDStateModel.convert_json_data_to_model({})
@@ -33,16 +37,24 @@ def test_main():
 
     for i in range(1, 100000):
 
-        pid.pid_loop(1, pid_config, pid_state, oven_temp_provider, [], output_controller)
+        pid.pid_loop(
+            1, pid_config, pid_state, oven_temp_provider, [], output_controller
+        )
         if pid_state.output > 0:
             oven_temp_provider.temp = oven_temp_provider.temp + 1
         else:
             oven_temp_provider.temp = oven_temp_provider.temp - 1
         time.sleep(0.1)
 
-class ServerApplication(object):
 
-    def __init__(self, config_file, temp_provider_factory, output_controller_factory, pid_controller):
+class ServerApplication(object):
+    def __init__(
+        self,
+        config_file,
+        temp_provider_factory,
+        output_controller_factory,
+        pid_controller,
+    ):
         self.pid_state_model = PIDStateModel.convert_json_data_to_model({})
         self.config_file = config_file
         self.config_model = ConfigModel.load_from_file(self.config_file)
@@ -50,12 +62,19 @@ class ServerApplication(object):
         for key in self.config_model.env_config:
             os.environ[key] = self.config_model.env_config[key]
         LoggerMgr.configure(self.config_model.logging)
-        self.oven_temp_provider = temp_provider_factory.CreateTempProvider(self.config_model.io_config.oven_temp_provider, 'Oven')
-        self.opt_temp_providers =[]
+        self.oven_temp_provider = temp_provider_factory.CreateTempProvider(
+            self.config_model.io_config.oven_temp_provider, "Oven"
+        )
+        self.opt_temp_providers = []
         for opt_temp_provider_entry in self.config_model.io_config.opt_temp_providers:
-            self.opt_temp_providers.append(temp_provider_factory.CreateTempProvider(opt_temp_provider_entry['type'],
-                                           opt_temp_provider_entry['label']))
-        self.output_controller = output_controller_factory.CreateOutputController(self.config_model.io_config.output_controller)
+            self.opt_temp_providers.append(
+                temp_provider_factory.CreateTempProvider(
+                    opt_temp_provider_entry["type"], opt_temp_provider_entry["label"]
+                )
+            )
+        self.output_controller = output_controller_factory.CreateOutputController(
+            self.config_model.io_config.output_controller
+        )
 
         self.pid = pid_controller
         self.pid_interval = 1.0
@@ -68,13 +87,19 @@ class ServerApplication(object):
         self.poller.register(self.socket, zmq.POLLIN)
 
         # db connector
-        #self.db_engine = DbManager.create_db_engine()
+        # self.db_engine = DbManager.create_db_engine()
 
-        self.mqtt_client = MqttClient('bbq/status', 'mosquitto.savage.zone', 1883)
+        self.mqtt_client = MqttClient("bbq/status", "mosquitto.savage.zone", 1883)
 
     def run_pid(self):
-        self.pid.pid_iteration(self.pid_interval, self.config_model.pid_config, self.pid_state_model, self.oven_temp_provider, self.opt_temp_providers,
-                 self.output_controller)
+        self.pid.pid_iteration(
+            self.pid_interval,
+            self.config_model.pid_config,
+            self.pid_state_model,
+            self.oven_temp_provider,
+            self.opt_temp_providers,
+            self.output_controller,
+        )
 
     def poll_message(self):
         ready_sockets = dict(self.poller.poll(self.pid_interval * 1000))
@@ -83,8 +108,8 @@ class ServerApplication(object):
         return None
 
     def apply_logging_config(self, config_msg):
-        if 'logging' in config_msg:
-            log_config = config_msg['logging']
+        if "logging" in config_msg:
+            log_config = config_msg["logging"]
             try:
                 LoggerMgr.configure(self.config_model.logging)
                 self.config_model.logging = log_config
@@ -112,7 +137,9 @@ class ServerApplication(object):
         # apply pid_config_msg to new_pid_config
         try:
             if new_pid_config.apply(pid_config_msg):
-                LoggerMgr.info("*** applying new configuration!", color=ConsoleColor.OKBLUE)
+                LoggerMgr.info(
+                    "*** applying new configuration!", color=ConsoleColor.OKBLUE
+                )
                 self.config_model.pid_config = new_pid_config
                 self.config_model.save_to_file(self.config_file)
             else:
@@ -126,17 +153,22 @@ class ServerApplication(object):
         self.run_pid()
         iteration = 0
         session = requests.Session()
-        ha_token = os.environ['HA_TOKEN']
-        while(True):
+        ha_token = os.environ["HA_TOKEN"]
+        while True:
             stopwatch = Stopwatch()
             received_message = self.poll_message()
             if received_message:
-                LoggerMgr.info("*** received message from client", color=ConsoleColor.OKBLUE)
-                LoggerMgr.info("*** message = {}".format(received_message), color=ConsoleColor.OKBLUE)
-                if 'pid_config' in received_message:
-                    self.apply_pid_config(received_message['pid_config'])
-                if 'pid_state' in received_message:
-                    self.apply_pid_state(received_message['pid_state'])
+                LoggerMgr.info(
+                    "*** received message from client", color=ConsoleColor.OKBLUE
+                )
+                LoggerMgr.info(
+                    "*** message = {}".format(received_message),
+                    color=ConsoleColor.OKBLUE,
+                )
+                if "pid_config" in received_message:
+                    self.apply_pid_config(received_message["pid_config"])
+                if "pid_state" in received_message:
+                    self.apply_pid_state(received_message["pid_state"])
 
             elapsed = stopwatch.elapsed()
             if elapsed < self.pid_interval:
@@ -146,35 +178,47 @@ class ServerApplication(object):
 
             db_insert_interval = 15
             if iteration % db_insert_interval == 0:
-                #self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
-                self.mqtt_client.publish({ **self.config_model.pid_config.as_dict(), **self.pid_state_model.as_dict() })
-                StateStorage.config_model = self.config_model.pid_config
-                StateStorage.state_model = self.pid_state_model
-
-                update_state_gauges(state_gauges, self.pid_state_model)
-                update_config_gauges(config_gauges, self.config_model.pid_config)
-
+                # update set point from home assistant input variable
                 try:
-                    r = session.get('https://homeassistant.savage.zone/api/states/input_number.bbq_temperature_set_point', headers={"Authorization": f"Bearer {ha_token}"})
-                    new_set_point = int(float(r.json()['state']))
+                    r = session.get(
+                        "https://homeassistant.savage.zone/api/states/input_number.bbq_temperature_set_point",
+                        headers={"Authorization": f"Bearer {ha_token}"},
+                    )
+                    new_set_point = int(float(r.json()["state"]))
                     if new_set_point != self.config_model.pid_config.set_point:
-                        pid_config = {'set_point': new_set_point}
+                        pid_config = {"set_point": new_set_point}
                         self.apply_pid_config(pid_config)
                 except BaseException as e:
                     LoggerMgr.warning(str(e))
+
+                # skip database insertion
+                # self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
+
+                # publish state to MQTT
+                self.mqtt_client.publish(
+                    {
+                        **self.config_model.pid_config.as_dict(),
+                        **self.pid_state_model.as_dict(),
+                    }
+                )
+
+                # update prometheus gauges
+                update_state_gauges(state_gauges, self.pid_state_model)
+                update_config_gauges(config_gauges, self.config_model.pid_config)
 
             iteration += 1
 
             if received_message is not None:
                 # send reply with state
-                LoggerMgr.info("*** sending message back to client", color=ConsoleColor.OKBLUE)
+                LoggerMgr.info(
+                    "*** sending message back to client", color=ConsoleColor.OKBLUE
+                )
                 self.socket.send_json(self.pid_state_model.as_dict())
 
 
-
 if __name__ == "__main__":
-    config_dir = '/config'
-    config_file = config_path = 'config.json'
+    config_dir = "/config"
+    config_file = config_path = "config.json"
     if os.path.isdir(config_dir):
         config_path = os.path.join(config_dir, config_file)
         if not os.path.isfile(config_path):
@@ -182,6 +226,10 @@ if __name__ == "__main__":
 
     start_http_server(9009)
 
-    app = ServerApplication(config_path, get_temp_provider_factory(), get_output_controller_factory(),
-                            PidController())
+    app = ServerApplication(
+        config_path,
+        get_temp_provider_factory(),
+        get_output_controller_factory(),
+        PidController(),
+    )
     app.main_loop()

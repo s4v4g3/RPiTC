@@ -14,8 +14,9 @@ PID_CONFIG_DEFAULTS = {
     "ki": 0.005,
     "kd": 1.0,
     "smooth_coeff": (1.0 / 20.0),
-    "max_output": 100.0
+    "max_output": 100.0,
 }
+
 
 def create_gauges(gauge_class):
     gauges = {}
@@ -23,9 +24,11 @@ def create_gauges(gauge_class):
         gauges[key] = gauge_class(f"bbq_config_{key}", f"BBQ Config value of {key}")
     return gauges
 
+
 def update_gauges(gauges, config_model):
     for key in gauges:
         gauges[key].set(config_model[key])
+
 
 class PIDConfigModel(DotDict):
     """
@@ -34,6 +37,7 @@ class PIDConfigModel(DotDict):
     This class wraps a single DUT value in the dut list in the config. This class makes the DUT information into a
     "dot" accessible dict, but also tries to provide documentation on some of the common keys provided in the JSON file.
     """
+
     set_point = None  # type: int
     """int: PID set point"""
 
@@ -47,7 +51,7 @@ class PIDConfigModel(DotDict):
     """float: derivative PID constant"""
     smooth_coeff = None  # type: float
     """float: running average smoothing coefficient"""
-    max_output = None # type: float
+    max_output = None  # type: float
     """float: maximum output"""
 
     @classmethod
@@ -73,11 +77,7 @@ class PIDConfigModel(DotDict):
         Returns:
             PIDConfigModel: The PID configuration read from the JSON file.
         """
-        with open(json_fn, 'r') as json_file:
+        with open(json_fn, "r") as json_file:
             json_data = json.load(json_file)
 
         return cls.convert_json_data_to_model(json_data, defaults)
-
-
-
-

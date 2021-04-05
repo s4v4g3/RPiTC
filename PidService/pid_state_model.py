@@ -5,15 +5,16 @@ import six
 import json
 from dot_dict import DotDict
 
-__all__ = ["PIDStateModel", "PID_STATE_DEFAULTS", 'create_gauges', 'update_gauges']
+__all__ = ["PIDStateModel", "PID_STATE_DEFAULTS", "create_gauges", "update_gauges"]
 
 PID_STATE_DEFAULTS = {
     "last_oven_temp": 0.0,
     "avg_oven_temp": 0.0,
     "output": 0,
     "error_sum": 0.0,
-    "opt_probe_temps": {}
+    "opt_probe_temps": {},
 }
+
 
 def create_gauges(gauge_class):
     gauges = {}
@@ -22,9 +23,11 @@ def create_gauges(gauge_class):
             gauges[key] = gauge_class(f"bbq_state_{key}", f"BBQ State value of {key}")
     return gauges
 
+
 def update_gauges(gauges, state_model):
     for key in gauges:
         gauges[key].set(state_model[key])
+
 
 class PIDStateModel(DotDict):
     """
@@ -33,6 +36,7 @@ class PIDStateModel(DotDict):
     This class wraps a single DUT value in the dut list in the config. This class makes the DUT information into a
     "dot" accessible dict, but also tries to provide documentation on some of the common keys provided in the JSON file.
     """
+
     last_oven_temp = None  # type: float
     """float: last oven temperature"""
 
@@ -81,11 +85,7 @@ class PIDStateModel(DotDict):
             PIDStateModel: The DUT configurations read from the JSON file.
         """
 
-        with open(json_fn, 'r') as json_file:
+        with open(json_fn, "r") as json_file:
             json_data = json.load(json_file)
 
         return cls.convert_json_data_to_model(json_data, defaults)
-
-
-
-

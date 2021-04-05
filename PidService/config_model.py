@@ -1,4 +1,3 @@
-
 import json
 from dot_dict import DotDict
 from pid_state_model import PIDStateModel, PID_STATE_DEFAULTS
@@ -8,51 +7,45 @@ import os
 __all__ = ["ConfigModel", "CONFIG_DEFAULTS"]
 
 CONFIG_DEFAULTS = {
-  "pid_config": {},
-  "io_config": {
-      "server_address": "tcp://*:12355",
-      "oven_temp_provider": "MockTempProvider",
-      "output_controller": "MockOutputController",
-      "opt_temp_providers": [
-         {
-            "label": "Food Probe 1",
-            "type": "MockTempProvider"
-         }
-      ]
-   },
-  "logging": {
-        'version': 1,
-        'formatters': {
-            'default': {'format': '%(asctime)s - %(levelname)s - %(message)s', 'datefmt': '%Y-%m-%d %H:%M:%S'}
+    "pid_config": {},
+    "io_config": {
+        "server_address": "tcp://*:12355",
+        "oven_temp_provider": "MockTempProvider",
+        "output_controller": "MockOutputController",
+        "opt_temp_providers": [{"label": "Food Probe 1", "type": "MockTempProvider"}],
+    },
+    "logging": {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": "%(asctime)s - %(levelname)s - %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+            }
         },
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'formatter': 'default',
-                'stream': 'ext://sys.stdout'
+        "handlers": {
+            "console": {
+                "level": "DEBUG",
+                "class": "logging.StreamHandler",
+                "formatter": "default",
+                "stream": "ext://sys.stdout",
             },
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.handlers.RotatingFileHandler',
-                'formatter': 'default',
-                'filename': 'log.txt',
-                'maxBytes': 1024,
-                'backupCount': 3
-            }
+            "file": {
+                "level": "DEBUG",
+                "class": "logging.handlers.RotatingFileHandler",
+                "formatter": "default",
+                "filename": "log.txt",
+                "maxBytes": 1024,
+                "backupCount": 3,
+            },
         },
-        'loggers': {
-            '': {
-                'level': 'DEBUG',
-                'handlers': ['console', 'file']
-            }
-        },
-        'disable_existing_loggers': True
-    }
+        "loggers": {"": {"level": "DEBUG", "handlers": ["console", "file"]}},
+        "disable_existing_loggers": True,
+    },
 }
 
+
 class IOConfigModel(DotDict):
-    server_address = None  #type: str
+    server_address = None  # type: str
     """str: server address"""
 
     oven_temp_provider = None  # type: str
@@ -66,13 +59,13 @@ class IOConfigModel(DotDict):
 
 
 class ConfigModel(DotDict):
-    env_config = None # type: dict
+    env_config = None  # type: dict
     """dict: Environment Config"""
 
-    pid_config = None # type: PIDConfigModel
+    pid_config = None  # type: PIDConfigModel
     """PIDConfigModel: PID Config"""
 
-    io_config = None #type: IOConfigModel
+    io_config = None  # type: IOConfigModel
     """IOConfigModel: io configuration"""
 
     @classmethod
@@ -95,7 +88,6 @@ class ConfigModel(DotDict):
         pid_config = config_model.pid_config
         config_model.pid_config = PIDConfigModel.convert_json_data_to_model(pid_config)
         return config_model
-
 
     @classmethod
     def convert_json_data_to_model(cls, json_data, defaults=None):
@@ -129,7 +121,7 @@ class ConfigModel(DotDict):
         Returns:
             ConfigModel: The configuration read from the JSON file.
         """
-        with open(json_fn, 'r') as json_file:
+        with open(json_fn, "r") as json_file:
             json_data = json.load(json_file)
 
         return cls.convert_json_data_to_model(json_data, defaults)

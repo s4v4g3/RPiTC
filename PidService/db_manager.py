@@ -8,38 +8,47 @@ import os
 
 __all__ = ["DbManager"]
 
-DEFAULT_CONNECTION_STRING = 'mysql+mysqlconnector://bbq:bbq@localhost/bbq'
+DEFAULT_CONNECTION_STRING = "mysql+mysqlconnector://bbq:bbq@localhost/bbq"
+
 
 class DbManager(object):
-
     @staticmethod
     def create_db_engine():
         return AlchemyEngine()
 
 
-
 class AlchemyEngine(object):
-
     def __init__(self):
-        conn_str = os.environ.get('DB_CONNECTION_STRING', DEFAULT_CONNECTION_STRING)
+        conn_str = os.environ.get("DB_CONNECTION_STRING", DEFAULT_CONNECTION_STRING)
         self.engine = db.create_engine(conn_str)
         self.connection = self.engine.connect()
         metadata = db.MetaData()
-        self.pid_state_table = db.Table('pid_state', metadata, autoload=True, autoload_with=self.engine)
+        self.pid_state_table = db.Table(
+            "pid_state", metadata, autoload=True, autoload_with=self.engine
+        )
         metadata = db.MetaData()
-        self.pid_config_table = db.Table('pid_config', metadata, autoload=True, autoload_with=self.engine)
+        self.pid_config_table = db.Table(
+            "pid_config", metadata, autoload=True, autoload_with=self.engine
+        )
         """"""
 
     def insert(self, pid_config, pid_state):
 
         # compute hash of pid_config
-        config_hash = hashlib.md5(json.dumps(pid_config.as_dict(), sort_keys=True).encode()).hexdigest()
+        config_hash = hashlib.md5(
+            json.dumps(pid_config.as_dict(), sort_keys=True).encode()
+        ).hexdigest()
 
-        s = db.select([self.pid_config_table.c.id]).where(self.pid_config_table.columns.id == config_hash)
+        s = db.select([self.pid_config_table.c.id]).where(
+            self.pid_config_table.columns.id == config_hash
+        )
         result = self.connection.execute(s)
         count = result.rowcount
         if count == 0:
-            LoggerMgr.info("Inserting new pid_config row with id={}".format(config_hash), color=ConsoleColor.RED)
+            LoggerMgr.info(
+                "Inserting new pid_config row with id={}".format(config_hash),
+                color=ConsoleColor.RED,
+            )
             query = db.insert(self.pid_config_table).values(
                 id=config_hash,
                 set_point=pid_config.set_point,
@@ -48,7 +57,7 @@ class AlchemyEngine(object):
                 ki=pid_config.ki,
                 kd=pid_config.kd,
                 smooth_coeff=pid_config.smooth_coeff,
-                max_output=pid_config.max_output
+                max_output=pid_config.max_output,
             )
             result = self.connection.execute(query)
 
@@ -69,7 +78,6 @@ class AlchemyEngine(object):
             error_sum=pid_state.error_sum,
             set_point=pid_config.set_point,
             pid_config=config_hash,
-            local_time=local_time.timestamp())
+            local_time=local_time.timestamp(),
+        )
         result = self.connection.execute(query)
-
-

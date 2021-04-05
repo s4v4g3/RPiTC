@@ -3,3 +3,4 @@ log.txt
 log.txt.*
 .idea/workspace.xml
 .idea/libraries/
+venv/

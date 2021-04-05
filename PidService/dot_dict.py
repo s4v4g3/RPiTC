@@ -1,9 +1,9 @@
-
 import copy
 import os
 
 import six
 import json
+
 
 class DotDict(dict):
     def __getattribute__(self, name):
@@ -21,7 +21,7 @@ class DotDict(dict):
         return {key: self[key] for key in self}
 
     def save_to_file(self, file_name):
-        with open(file_name, 'w') as f:
+        with open(file_name, "w") as f:
             json.dump(self.__dict__, f, indent=3)
 
     def copy(self):
@@ -37,7 +37,7 @@ class DotDict(dict):
         Returns:
             True if anything was changed
         """
-        anything_changed = False;
+        anything_changed = False
         for key in new_dict:
             value = new_dict[key]
             if key in self.__dict__:
@@ -78,6 +78,7 @@ class DotDict(dict):
                         if is_list(elem):
                             encountered_lists.append(elem)
         return dot_dict
+
 
 def is_list(suspected_list):
     if isinstance(suspected_list, six.string_types):

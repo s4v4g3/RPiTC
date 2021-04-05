@@ -2,6 +2,7 @@ import time
 
 __all__ = ["Stopwatch"]
 
+
 class Stopwatch(object):
     def __init__(self):
         self.start_time = time.time()
@@ -19,4 +20,3 @@ class Stopwatch(object):
             return self.stop_time - self.start_time
         else:
             return time.time() - self.start_time
-
