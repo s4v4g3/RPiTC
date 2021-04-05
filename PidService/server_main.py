@@ -14,6 +14,7 @@ import os
 import shutil
 from mqtt_client import MqttClient
 from prometheus_client import start_http_server, Gauge
+import requests
 
 state_gauges = create_state_gauges(Gauge)
 config_gauges = create_config_gauges(Gauge)
@@ -124,6 +125,8 @@ class ServerApplication(object):
         LoggerMgr.info("Starting ServerApplication.main_loop()")
         self.run_pid()
         iteration = 0
+        session = requests.Session()
+        ha_token = os.environ['HA_TOKEN']
         while(True):
             stopwatch = Stopwatch()
             received_message = self.poll_message()
@@ -150,6 +153,15 @@ class ServerApplication(object):
 
                 update_state_gauges(state_gauges, self.pid_state_model)
                 update_config_gauges(config_gauges, self.config_model.pid_config)
+
+                try:
+                    r = session.get('https://homeassistant.savage.zone/api/states/input_number.bbq_temperature_set_point', headers={"Authorization": f"Bearer {ha_token}"})
+                    new_set_point = int(r.json()['state'])
+                    if new_set_point != self.config_model.pid_config.set_point:
+                        pid_config = {'set_point': new_set_point}
+                        self.apply_pid_config(pid_config)
+                except BaseException as e:
+                    LoggerMgr.warning(str(e))
 
             iteration += 1
 

@@ -7,4 +7,5 @@ py-dateutil
 paho-mqtt
 python-logging-loki
 prometheus_client
+requests
 
