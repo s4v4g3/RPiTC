@@ -23,6 +23,7 @@ import shutil
 from mqtt_client import MqttClient
 from prometheus_client import start_http_server, Gauge
 import requests
+import threading
 
 state_gauges = create_state_gauges(Gauge)
 config_gauges = create_config_gauges(Gauge)
@@ -45,6 +46,31 @@ def test_main():
         else:
             oven_temp_provider.temp = oven_temp_provider.temp - 1
         time.sleep(0.1)
+
+
+class SetPointUpdater:
+    def __init__(self, ha_token):
+        self.ha_token = ha_token
+        self.set_point = 0
+        self.session = requests.Session()
+
+    def start(self):
+        server_thread = threading.Thread(target=self.updater_thread)
+        server_thread.start()
+
+    def updater_thread(self):
+        while True:
+            try:
+                r = self.session.get(
+                    "https://homeassistant.savage.zone/api/states/input_number.bbq_temperature_set_point",
+                    headers={"Authorization": f"Bearer {self.ha_token}"},
+                )
+                new_set_point = int(float(r.json()["state"]))
+                self.set_point = new_set_point
+            except BaseException as e:
+                LoggerMgr.warning(str(e))
+            time.sleep(15)
+
 
 
 class ServerApplication(object):
@@ -148,12 +174,16 @@ class ServerApplication(object):
             LoggerMgr.warning("******** ValueError: {}".format(str(e)))
             pass
 
+
+
     def main_loop(self):
         LoggerMgr.info("Starting ServerApplication.main_loop()")
         self.run_pid()
         iteration = 0
-        session = requests.Session()
         ha_token = os.environ["HA_TOKEN"]
+        set_point_updater = SetPointUpdater(ha_token)
+        set_point_updater.start()
+
         while True:
             stopwatch = Stopwatch()
             received_message = self.poll_message()
@@ -178,18 +208,10 @@ class ServerApplication(object):
 
             db_insert_interval = 15
             if iteration % db_insert_interval == 0:
-                # update set point from home assistant input variable
-                try:
-                    r = session.get(
-                        "https://homeassistant.savage.zone/api/states/input_number.bbq_temperature_set_point",
-                        headers={"Authorization": f"Bearer {ha_token}"},
-                    )
-                    new_set_point = int(float(r.json()["state"]))
-                    if new_set_point != self.config_model.pid_config.set_point:
-                        pid_config = {"set_point": new_set_point}
-                        self.apply_pid_config(pid_config)
-                except BaseException as e:
-                    LoggerMgr.warning(str(e))
+                new_set_point = set_point_updater.set_point
+                if new_set_point != self.config_model.pid_config.set_point:
+                    pid_config = {"set_point": new_set_point}
+                    self.apply_pid_config(pid_config)
 
                 # skip database insertion
                 # self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
