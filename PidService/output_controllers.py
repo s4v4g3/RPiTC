@@ -38,7 +38,7 @@ class RPiPWMOutputController(OutputControllerBase):
     def set_output(self, output):
         if output != self.output:
             self.output = output
-            LoggerMgr.info(
+            LoggerMgr.debug(
                 "RPiPWMOutputController: setting output = {}".format(self.output)
             )
             self.pi.set_PWM_dutycycle(self.pin, self.output)
