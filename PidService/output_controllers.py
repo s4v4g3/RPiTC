@@ -24,13 +24,13 @@ class RPiPWMOutputController(OutputControllerBase):
         self.pin = 13
         self.pi.set_PWM_range(self.pin, 100)
         self.pi.set_PWM_frequency(self.pin, 0)
-        LoggerMgr.info(
+        LoggerMgr.debug(
             "RPiPWMOutputController: PWM frequency = {}".format(
                 self.pi.get_PWM_frequency(self.pin)
             )
         )
         self.output = 0
-        LoggerMgr.info(
+        LoggerMgr.debug(
             "RPiPWMOutputController: setting output = {}".format(self.output)
         )
         self.pi.set_PWM_dutycycle(self.pin, self.output)

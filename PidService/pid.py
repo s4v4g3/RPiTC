@@ -43,14 +43,14 @@ class PidController(object):
         Returns:
 
         """
-        LoggerMgr.info("pid_iteration {", color=ConsoleColor.BOLD)
-        LoggerMgr.info("set_point: {}".format(pid_config.set_point))
+        LoggerMgr.debug("pid_iteration {", color=ConsoleColor.BOLD)
+        LoggerMgr.debug("set_point: {}".format(pid_config.set_point))
         pid_state.last_oven_temp = oven_temp_provider.read_temp()
-        LoggerMgr.info("oven temp: {}".format(pid_state.last_oven_temp))
+        LoggerMgr.debug("oven temp: {}".format(pid_state.last_oven_temp))
         opt_temps = {}
         for opt_temp_provider in opt_temp_providers:
             opt_temps[opt_temp_provider.label] = opt_temp_provider.read_temp()
-            LoggerMgr.info(
+            LoggerMgr.debug(
                 "{} temp: {}".format(
                     opt_temp_provider.label, opt_temps[opt_temp_provider.label]
                 )
@@ -58,11 +58,11 @@ class PidController(object):
         pid_state.opt_probe_temps = opt_temps
 
         self.__calc_avg_temp(pid_config, pid_state)
-        LoggerMgr.info("avg oven temp: {}".format(pid_state.avg_oven_temp))
+        LoggerMgr.debug("avg oven temp: {}".format(pid_state.avg_oven_temp))
 
         last_output = pid_state.output
         error = pid_config.set_point - pid_state.last_oven_temp
-        LoggerMgr.info("error: {}".format(error))
+        LoggerMgr.debug("error: {}".format(error))
 
         if True:
             pid_state.i_term = 0
@@ -85,10 +85,10 @@ class PidController(object):
             pid_state.avg_oven_temp - pid_state.last_oven_temp
         )
 
-        LoggerMgr.info("kb: {}".format(pid_config.kb))
-        LoggerMgr.info("p_term: {}".format(pid_state.p_term))
-        LoggerMgr.info("d_term: {}".format(pid_state.d_term))
-        LoggerMgr.info("error_sum: {}".format(pid_state.error_sum))
+        LoggerMgr.debug("kb: {}".format(pid_config.kb))
+        LoggerMgr.debug("p_term: {}".format(pid_state.p_term))
+        LoggerMgr.debug("d_term: {}".format(pid_state.d_term))
+        LoggerMgr.debug("error_sum: {}".format(pid_state.error_sum))
         output = pid_config.kb
         output += pid_state.p_term
         output += pid_state.d_term
@@ -101,5 +101,5 @@ class PidController(object):
             pid_state.output = 0
 
         output_controller.set_output(pid_state.output)
-        LoggerMgr.info("output: {}".format(pid_state.output))
-        LoggerMgr.info("} pid_iteration", color=ConsoleColor.BOLD)
+        LoggerMgr.debug("output: {}".format(pid_state.output))
+        LoggerMgr.debug("} pid_iteration", color=ConsoleColor.BOLD)
