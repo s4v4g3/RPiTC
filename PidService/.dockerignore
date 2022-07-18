@@ -3,3 +3,5 @@ __pycache__/
 .idea/
 log.txt
 log.txt.*
+start_docker_container.sh
+

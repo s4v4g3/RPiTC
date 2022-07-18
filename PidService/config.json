@@ -29,7 +29,7 @@
             "level": "DEBUG",
             "class": "logging_loki.LokiHandler",
             "formatter": "default",
-            "url": "http://loki.savage.zone:3100/loki/api/v1/push",
+            "url": "https://loki.savage.zone/loki/api/v1/push",
             "tags": {"application": "PidService"},
             "version": "1"
          }
