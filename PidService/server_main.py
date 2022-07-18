@@ -74,6 +74,8 @@ class SetPointUpdater:
 
 
 class ServerApplication(object):
+    MQTT_TOPIC_SET_TEMP = "bbq_pit/heat/temperature/set"
+
     def __init__(
         self,
         config_file,
@@ -115,7 +117,9 @@ class ServerApplication(object):
         # db connector
         # self.db_engine = DbManager.create_db_engine()
 
-        self.mqtt_client = MqttClient("bbq/status", "mosquitto.savage.zone", 1883)
+        self.mqtt_client = MqttClient("bbq/status", "mosquitto.savage.zone", 1883, subscribe_callback=self.on_mqtt_message)
+        self.mqtt_client.subscribe(self.MQTT_TOPIC_SET_TEMP)
+
 
     def run_pid(self):
         self.pid.pid_iteration(
@@ -174,7 +178,19 @@ class ServerApplication(object):
             LoggerMgr.warning("******** ValueError: {}".format(str(e)))
             pass
 
+    def on_mqtt_message(self, message):
+        if message.topic == self.MQTT_TOPIC_SET_TEMP:
+            try:
+                set_point = float(message.payload)
+                self.update_set_point(set_point)
+            except ValueError as e:
+                LoggerMgr.warning(f"******** ValueError: {str(e)}")
 
+
+    def update_set_point(self, new_set_point):
+        if new_set_point != self.config_model.pid_config.set_point:
+            pid_config = {"set_point": new_set_point}
+            self.apply_pid_config(pid_config)
 
     def main_loop(self):
         LoggerMgr.info("Starting ServerApplication.main_loop()")
@@ -206,15 +222,10 @@ class ServerApplication(object):
 
             self.run_pid()
 
-            db_insert_interval = 15
-            if iteration % db_insert_interval == 0:
+            publish_interval = 5
+            if iteration % publish_interval == 0:
                 new_set_point = set_point_updater.set_point
-                if new_set_point != self.config_model.pid_config.set_point:
-                    pid_config = {"set_point": new_set_point}
-                    self.apply_pid_config(pid_config)
-
-                # skip database insertion
-                # self.db_engine.insert(self.config_model.pid_config, self.pid_state_model)
+                self.update_set_point(new_set_point)
 
                 # publish state to MQTT
                 self.mqtt_client.publish(
